@@ -95,11 +95,12 @@ func callbackHandler(c *gin.Context) {
 						linebot.NewPostbackAction("Buy", "action=buy&itemid=123", "", "", linebot.InputOptionOpenKeyboard, "text"),
 						linebot.NewURIAction("View detail", "https://example.com/page/123"))
 					templateMessage := linebot.NewTemplateMessage("This is a buttons template", template)
-					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("msg ID: "+message.ID+" Get: "+message.Text+" , \n OK! remain message:")).Do(); err != nil {
-						log.Println(err.Error())
-					}
+					// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("msg ID: "+message.ID+" Get: "+message.Text+" , \n OK! remain message:")).Do(); err != nil {
+					// 	log.Println(err.Error())
+					// }
 
 					if _, err = bot.ReplyMessage(event.ReplyToken, templateMessage).Do(); err != nil {
+						bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(err.Error())).Do()
 						log.Println(err.Error())
 					}
 				}
