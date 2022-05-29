@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/joho/godotenv/autoload"
@@ -15,6 +14,42 @@ var (
 	bot *linebot.Client
 	err error
 )
+
+var button string = `{
+	"type": "template",
+	"altText": "This is a buttons template",
+	"template": {
+		"type": "buttons",
+		"thumbnailImageUrl": "https://example.com/bot/images/image.jpg",
+		"imageAspectRatio": "rectangle",
+		"imageSize": "cover",
+		"imageBackgroundColor": "#FFFFFF",
+		"title": "Menu",
+		"text": "Please select",
+		"defaultAction": {
+			"type": "uri",
+			"label": "View detail",
+			"uri": "http://example.com/page/123"
+		},
+		"actions": [
+			{
+			  "type": "postback",
+			  "label": "Buy",
+			  "data": "action=buy&itemid=123"
+			},
+			{
+			  "type": "postback",
+			  "label": "Add to cart",
+			  "data": "action=add&itemid=123"
+			},
+			{
+			  "type": "uri",
+			  "label": "View detail",
+			  "uri": "http://example.com/page/123"
+			}
+		]
+	}
+  }`
 
 func main() {
 	bot, err = linebot.New(os.Getenv("CHANNEL_SECRET"), os.Getenv("CHANNEL_ACCESS_TOKEN"))
@@ -47,13 +82,19 @@ func callbackHandler(c *gin.Context) {
 		if event.Type == linebot.EventTypeMessage {
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
-				quota, err := bot.GetMessageQuota().Do()
-				if err != nil {
-					log.Println("Quota err:", err)
-				}
+				// quota, err := bot.GetMessageQuota().Do()
+				// if err != nil {
+				// 	log.Println("Quota err:", err)
+				// }
 				// 回覆訊息
-				if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("msg ID: "+message.ID+" Get: "+message.Text+" , \n OK! remain message:"+strconv.FormatInt(quota.Value, 10)+"Header: "+c.Request.Header.Get("X_LINE_SIGNATURE"))).Do(); err != nil {
-					log.Println(err.Error())
+				if message.Text == "查看活動" {
+					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("msg ID: "+message.ID+" Get: "+message.Text+" , \n OK! remain message:")).Do(); err != nil {
+						log.Println(err.Error())
+					}
+
+					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(button)).Do(); err != nil {
+						log.Println(err.Error())
+					}
 				}
 			}
 		}
