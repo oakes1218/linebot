@@ -88,11 +88,18 @@ func callbackHandler(c *gin.Context) {
 				// }
 				// 回覆訊息
 				if message.Text == "查看活動" {
+					url := "https://example.com/bot/images/image.jpg"
+					template := linebot.NewButtonsTemplate(url, "Button", "test", linebot.NewPostbackAction("Buy", "action=buy&itemid=123", "", "displayText", "", ""),
+						linebot.NewPostbackAction("Buy", "action=buy&itemid=123", "text", "", "", ""),
+						linebot.NewPostbackAction("Buy", "action=buy&itemid=123", "", "", linebot.InputOptionCloseRichMenu, ""),
+						linebot.NewPostbackAction("Buy", "action=buy&itemid=123", "", "", linebot.InputOptionOpenKeyboard, "text"),
+						linebot.NewURIAction("View detail", "https://example.com/page/123"))
+					templateMessage := linebot.NewTemplateMessage("This is a buttons template", template)
 					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("msg ID: "+message.ID+" Get: "+message.Text+" , \n OK! remain message:")).Do(); err != nil {
 						log.Println(err.Error())
 					}
 
-					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(button)).Do(); err != nil {
+					if _, err = bot.ReplyMessage(event.ReplyToken, templateMessage).Do(); err != nil {
 						log.Println(err.Error())
 					}
 				}
