@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/gin-gonic/gin"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/line/line-bot-sdk-go/linebot"
 )
@@ -20,22 +21,23 @@ func main() {
 
 	if err != nil {
 		log.Println(err.Error())
+		return
 	}
 
-	http.HandleFunc("/callback", callbackHandler)
-
-	log.Fatal(http.ListenAndServe(":84", nil))
+	r := gin.Default()
+	r.POST("/callback", callbackHandler)
+	r.Run()
 }
 
-func callbackHandler(w http.ResponseWriter, r *http.Request) {
+func callbackHandler(c *gin.Context) {
 	// 接收請求
-	events, err := client.ParseRequest(r)
-
+	events, err := client.ParseRequest(c.Request)
 	if err != nil {
 		if err == linebot.ErrInvalidSignature {
-			w.WriteHeader(400)
+			log.Println(err, "+++++")
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		} else {
-			w.WriteHeader(500)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
 
 		return
