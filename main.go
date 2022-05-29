@@ -116,7 +116,7 @@ func callbackHandler(c *gin.Context) {
 					cm[str[1]] = res.DisplayName
 					cg := SetClock(cm)
 					wk[str[0]] = cg
-					SetWeek(wk)
+					wg := SetWeek(wk)
 
 					s, err := json.Marshal(wg)
 					if err != nil {
@@ -141,7 +141,7 @@ func callbackHandler(c *gin.Context) {
 					cm[str[1]] = res.DisplayName
 					cg := SetClock(cm)
 					wk[str[0]] = cg
-					SetWeek(wk)
+					wg := SetWeek(wk)
 
 					s, err := json.Marshal(wg)
 					if err != nil {
@@ -166,7 +166,7 @@ func callbackHandler(c *gin.Context) {
 					cm[str[1]] = res.DisplayName
 					cg := SetClock(cm)
 					wk[str[0]] = cg
-					SetWeek(wk)
+					wg := SetWeek(wk)
 
 					s, err := json.Marshal(wg)
 					if err != nil {
