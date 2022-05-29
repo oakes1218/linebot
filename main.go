@@ -37,8 +37,8 @@ const (
 	SUN = "Sunday"
 )
 
-var cg = &ClockGroup{}
-var wg = &WeekGroup{}
+var cg *ClockGroup
+var wg *WeekGroup
 
 func main() {
 	bot, err = linebot.New(os.Getenv("CHANNEL_SECRET"), os.Getenv("CHANNEL_ACCESS_TOKEN"))
