@@ -33,7 +33,9 @@ github.com/json-iterator/go
 github.com/leodido/go-urn
 # github.com/line/line-bot-sdk-go v7.8.0+incompatible
 ## explicit
-github.com/line/line-bot-sdk-go/linebot
+# github.com/line/line-bot-sdk-go/v7 v7.16.0
+## explicit; go 1.11
+github.com/line/line-bot-sdk-go/v7/linebot
 # github.com/mattn/go-isatty v0.0.12
 ## explicit; go 1.12
 github.com/mattn/go-isatty
