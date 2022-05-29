@@ -88,18 +88,15 @@ func callbackHandler(c *gin.Context) {
 				// }
 				// 回覆訊息
 				if message.Text == "查看活動" {
-					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("msg ID: "+message.ID+" Get: "+message.Text+" , \n OK! remain message:")).Do(); err != nil {
-						log.Println(err.Error())
-					}
-
 					leftBtn := linebot.NewMessageAction("left", "left clicked")
 					rightBtn := linebot.NewMessageAction("right", "right clicked")
 					template := linebot.NewConfirmTemplate("Hello World", leftBtn, rightBtn)
-					message := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
+					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
 
-					if _, err = bot.ReplyMessage(event.ReplyToken, message).Do(); err != nil {
+					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("msg ID: "+message.ID+" Get: "+message.Text+" , \n OK!"), msg).Do(); err != nil {
 						log.Println(err.Error())
 					}
+
 				}
 			}
 		}
