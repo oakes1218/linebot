@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/joho/godotenv/autoload"
@@ -25,10 +26,11 @@ func main() {
 
 	r := gin.Default()
 	r.POST("/callback", callbackHandler)
-	r.Run()
+	r.Run(":80")
 }
 
 func callbackHandler(c *gin.Context) {
+	defer c.Request.Body.Close()
 	// 接收請求
 	events, err := bot.ParseRequest(c.Request)
 	if err != nil {
@@ -45,8 +47,12 @@ func callbackHandler(c *gin.Context) {
 		if event.Type == linebot.EventTypeMessage {
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
+				quota, err := bot.GetMessageQuota().Do()
+				if err != nil {
+					log.Println("Quota err:", err)
+				}
 				// 回覆訊息
-				if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(message.Text)).Do(); err != nil {
+				if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("msg ID: "+message.ID+" Get: "+message.Text+" , \n OK! remain message:"+strconv.FormatInt(quota.Value, 10)+"Header: "+c.Request.Header.Get("X_LINE_SIGNATURE"))).Do(); err != nil {
 					log.Println(err.Error())
 				}
 			}
