@@ -1,9 +1,13 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/joho/godotenv/autoload"
@@ -13,6 +17,24 @@ import (
 var (
 	bot *linebot.Client
 	err error
+)
+
+type WeekGroup struct {
+	Week map[string]*ClockGroup `json: "week"`
+}
+
+type ClockGroup struct {
+	ClockMem map[string]string `json: "clock_mem"`
+}
+
+const (
+	MOM = "Monday"
+	TUE = "Tuseday"
+	WED = "wednesday"
+	THU = "Thursday"
+	FRI = "Firday"
+	SAT = "Saturday"
+	SUN = "Sunday"
 )
 
 func main() {
@@ -26,6 +48,13 @@ func main() {
 	r := gin.Default()
 	r.POST("/callback", callbackHandler)
 	r.Run()
+}
+
+func getWeek() string {
+	//set timezone
+	loc, _ := time.LoadLocation("Asia/Taipei")
+	t := time.Now().In(loc)
+	return t.Weekday().String()
 }
 
 func callbackHandler(c *gin.Context) {
@@ -46,16 +75,11 @@ func callbackHandler(c *gin.Context) {
 		if event.Type == linebot.EventTypeMessage {
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
-				// memID, err := bot.GetGroupMemberIDs(event.Source.GroupID, "").Do()
-				// if err != nil {
-				// 	log.Println(err.Error())
-				// }
-
 				// 回覆訊息
 				if message.Text == "查看活動" {
-					leftBtn := linebot.NewMessageAction("left", "left clicked")
-					rightBtn := linebot.NewMessageAction("right", "right clicked")
-					template := linebot.NewConfirmTemplate("Hello World", leftBtn, rightBtn)
+					leftBtn := linebot.NewMessageAction("六點", SAT+" 六點")
+					rightBtn := linebot.NewMessageAction("七點", SAT+" 七點")
+					template := linebot.NewConfirmTemplate("選擇時間", leftBtn, rightBtn)
 					// template := linebot.NewButtonsTemplate("https://www.facebook.com/win2fitness/photos/a.593850231091748/595671197576318/", "日期", "星期幾", leftBtn, rightBtn)
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
 
@@ -63,6 +87,60 @@ func callbackHandler(c *gin.Context) {
 						log.Println(err.Error())
 					}
 
+				}
+
+				if message.Text == SAT+" 六點" {
+					res, err := bot.GetProfile(event.Source.UserID).Do()
+					if err != nil {
+						log.Println(err.Error())
+					}
+
+					str := strings.Split(message.Text, " ")
+					cg := &ClockGroup{}
+					wg := &WeekGroup{}
+
+					cm := make(map[string]string, 0)
+					wk := make(map[string]*ClockGroup, 0)
+					cm[str[1]] = res.DisplayName
+					cg.ClockMem = cm
+					wk[str[0]] = cg
+					wg.Week = wk
+					s, err := json.Marshal(wg)
+					if err != nil {
+						fmt.Printf("Error: %s", err)
+						return
+					}
+
+					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(string(s))).Do(); err != nil {
+						log.Println(err.Error())
+					}
+				}
+
+				if message.Text == SAT+" 七點" {
+					res, err := bot.GetProfile(event.Source.UserID).Do()
+					if err != nil {
+						log.Println(err.Error())
+					}
+
+					str := strings.Split(message.Text, " ")
+					cg := &ClockGroup{}
+					wg := &WeekGroup{}
+
+					cm := make(map[string]string, 0)
+					wk := make(map[string]*ClockGroup, 0)
+					cm[str[1]] = res.DisplayName
+					cg.ClockMem = cm
+					wk[str[0]] = cg
+					wg.Week = wk
+					s, err := json.Marshal(wg)
+					if err != nil {
+						fmt.Printf("Error: %s", err)
+						return
+					}
+
+					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(string(s))).Do(); err != nil {
+						log.Println(err.Error())
+					}
 				}
 			}
 		}
