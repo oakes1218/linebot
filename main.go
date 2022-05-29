@@ -37,6 +37,9 @@ const (
 	SUN = "Sunday"
 )
 
+var cg = &ClockGroup{}
+var wg = &WeekGroup{}
+
 func main() {
 	bot, err = linebot.New(os.Getenv("CHANNEL_SECRET"), os.Getenv("CHANNEL_ACCESS_TOKEN"))
 
@@ -96,9 +99,30 @@ func callbackHandler(c *gin.Context) {
 					}
 
 					str := strings.Split(message.Text, " ")
-					cg := &ClockGroup{}
-					wg := &WeekGroup{}
+					cm := make(map[string]string, 0)
+					wk := make(map[string]*ClockGroup, 0)
+					cm[str[1]] = res.DisplayName
+					cg.ClockMem = cm
+					wk[str[0]] = cg
+					wg.Week = wk
+					s, err := json.Marshal(wg)
+					if err != nil {
+						fmt.Printf("Error: %s", err)
+						return
+					}
 
+					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(string(s))).Do(); err != nil {
+						log.Println(err.Error())
+					}
+				}
+
+				if message.Text == SUN+" 六點" {
+					res, err := bot.GetProfile(event.Source.UserID).Do()
+					if err != nil {
+						log.Println(err.Error())
+					}
+
+					str := strings.Split(message.Text, " ")
 					cm := make(map[string]string, 0)
 					wk := make(map[string]*ClockGroup, 0)
 					cm[str[1]] = res.DisplayName
@@ -123,9 +147,6 @@ func callbackHandler(c *gin.Context) {
 					}
 
 					str := strings.Split(message.Text, " ")
-					cg := &ClockGroup{}
-					wg := &WeekGroup{}
-
 					cm := make(map[string]string, 0)
 					wk := make(map[string]*ClockGroup, 0)
 					cm[str[1]] = res.DisplayName
