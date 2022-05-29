@@ -40,6 +40,18 @@ const (
 var cg *ClockGroup
 var wg *WeekGroup
 
+func SetWeek(wk map[string]*ClockGroup) *WeekGroup {
+	return &WeekGroup{
+		Week: wk,
+	}
+}
+
+func SetClock(cm map[string]string) *ClockGroup {
+	return &ClockGroup{
+		ClockMem: cm,
+	}
+}
+
 func main() {
 	bot, err = linebot.New(os.Getenv("CHANNEL_SECRET"), os.Getenv("CHANNEL_ACCESS_TOKEN"))
 
@@ -86,7 +98,7 @@ func callbackHandler(c *gin.Context) {
 					// template := linebot.NewButtonsTemplate("https://www.facebook.com/win2fitness/photos/a.593850231091748/595671197576318/", "日期", "星期幾", leftBtn, rightBtn)
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
 
-					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("mem ID: "+event.Source.UserID+" Get: "+message.Text+" , \n OK!"), msg).Do(); err != nil {
+					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("Get: "+message.Text+" , \n OK!"), msg).Do(); err != nil {
 						log.Println(err.Error())
 					}
 
@@ -102,9 +114,10 @@ func callbackHandler(c *gin.Context) {
 					cm := make(map[string]string, 0)
 					wk := make(map[string]*ClockGroup, 0)
 					cm[str[1]] = res.DisplayName
-					cg.ClockMem = cm
+					cg := SetClock(cm)
 					wk[str[0]] = cg
-					wg.Week = wk
+					SetWeek(wk)
+
 					s, err := json.Marshal(wg)
 					if err != nil {
 						fmt.Printf("Error: %s", err)
@@ -126,9 +139,10 @@ func callbackHandler(c *gin.Context) {
 					cm := make(map[string]string, 0)
 					wk := make(map[string]*ClockGroup, 0)
 					cm[str[1]] = res.DisplayName
-					cg.ClockMem = cm
+					cg := SetClock(cm)
 					wk[str[0]] = cg
-					wg.Week = wk
+					SetWeek(wk)
+
 					s, err := json.Marshal(wg)
 					if err != nil {
 						fmt.Printf("Error: %s", err)
@@ -150,9 +164,10 @@ func callbackHandler(c *gin.Context) {
 					cm := make(map[string]string, 0)
 					wk := make(map[string]*ClockGroup, 0)
 					cm[str[1]] = res.DisplayName
-					cg.ClockMem = cm
+					cg := SetClock(cm)
 					wk[str[0]] = cg
-					wg.Week = wk
+					SetWeek(wk)
+
 					s, err := json.Marshal(wg)
 					if err != nil {
 						fmt.Printf("Error: %s", err)
