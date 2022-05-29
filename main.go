@@ -82,18 +82,21 @@ func callbackHandler(c *gin.Context) {
 		if event.Type == linebot.EventTypeMessage {
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
-				// quota, err := bot.GetMessageQuota().Do()
-				// if err != nil {
-				// 	log.Println("Quota err:", err)
-				// }
+
+				userID, err := bot.GetFollowerIDs("").Do()
+				if err != nil {
+					log.Println(err.Error())
+				}
+
 				// 回覆訊息
 				if message.Text == "查看活動" {
 					leftBtn := linebot.NewMessageAction("left", "left clicked")
 					rightBtn := linebot.NewMessageAction("right", "right clicked")
 					template := linebot.NewConfirmTemplate("Hello World", leftBtn, rightBtn)
+					// template := linebot.NewButtonsTemplate("https://www.facebook.com/win2fitness/photos/a.593850231091748/595671197576318/", "日期", "星期幾", leftBtn, rightBtn)
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
 
-					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("msg ID: "+message.ID+" Get: "+message.Text+" , \n OK!"), msg).Do(); err != nil {
+					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("msg ID: "+message.ID+" Get: "+message.Text+" , \n OK!"), msg, linebot.NewTextMessage(userID.UserIDs[0])).Do(); err != nil {
 						log.Println(err.Error())
 					}
 
