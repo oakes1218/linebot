@@ -15,42 +15,6 @@ var (
 	err error
 )
 
-var button string = `{
-	"type": "template",
-	"altText": "This is a buttons template",
-	"template": {
-		"type": "buttons",
-		"thumbnailImageUrl": "https://example.com/bot/images/image.jpg",
-		"imageAspectRatio": "rectangle",
-		"imageSize": "cover",
-		"imageBackgroundColor": "#FFFFFF",
-		"title": "Menu",
-		"text": "Please select",
-		"defaultAction": {
-			"type": "uri",
-			"label": "View detail",
-			"uri": "http://example.com/page/123"
-		},
-		"actions": [
-			{
-			  "type": "postback",
-			  "label": "Buy",
-			  "data": "action=buy&itemid=123"
-			},
-			{
-			  "type": "postback",
-			  "label": "Add to cart",
-			  "data": "action=add&itemid=123"
-			},
-			{
-			  "type": "uri",
-			  "label": "View detail",
-			  "uri": "http://example.com/page/123"
-			}
-		]
-	}
-  }`
-
 func main() {
 	bot, err = linebot.New(os.Getenv("CHANNEL_SECRET"), os.Getenv("CHANNEL_ACCESS_TOKEN"))
 
@@ -82,8 +46,7 @@ func callbackHandler(c *gin.Context) {
 		if event.Type == linebot.EventTypeMessage {
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
-
-				userID, err := bot.GetFollowerIDs("").Do()
+				memID, err := bot.GetGroupMemberIDs(event.Source.GroupID, "").Do()
 				if err != nil {
 					log.Println(err.Error())
 				}
@@ -96,7 +59,7 @@ func callbackHandler(c *gin.Context) {
 					// template := linebot.NewButtonsTemplate("https://www.facebook.com/win2fitness/photos/a.593850231091748/595671197576318/", "日期", "星期幾", leftBtn, rightBtn)
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
 
-					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("msg ID: "+message.ID+" Get: "+message.Text+" , \n OK!"), msg, linebot.NewTextMessage(userID.UserIDs[0])).Do(); err != nil {
+					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("mem ID: "+event.Source.UserID+" Get: "+message.Text+" , \n OK!"+memID.MemberIDs[0]), msg).Do(); err != nil {
 						log.Println(err.Error())
 					}
 
