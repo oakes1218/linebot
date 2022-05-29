@@ -26,7 +26,7 @@ func main() {
 
 	r := gin.Default()
 	r.POST("/callback", callbackHandler)
-	r.Run(":80")
+	r.Run()
 }
 
 func callbackHandler(c *gin.Context) {
