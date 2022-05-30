@@ -14,19 +14,6 @@ import (
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 )
 
-var (
-	bot *linebot.Client
-	err error
-)
-
-type WeekGroup struct {
-	Week map[string]*ClockGroup `json: "week"`
-}
-
-type ClockGroup struct {
-	ClockMem map[string]string `json: "clock_mem"`
-}
-
 const (
 	MOM = "Monday"
 	TUE = "Tuseday"
@@ -37,19 +24,24 @@ const (
 	SUN = "Sunday"
 )
 
-var cg *ClockGroup
-var wg *WeekGroup
+var (
+	bot *linebot.Client
+	err error
+	sWg []WeekGroup
+)
 
-func SetWeek(wk map[string]*ClockGroup) *WeekGroup {
-	return &WeekGroup{
-		Week: wk,
-	}
+type WeekGroup struct {
+	Week   string `json: "week"`
+	Clock  string `json: "clock"`
+	Member string `json: "member"`
 }
 
-func SetClock(cm map[string]string) *ClockGroup {
-	return &ClockGroup{
-		ClockMem: cm,
-	}
+func SetWeekGroup(mem, wk, ck string) (wg WeekGroup) {
+	wg.Member = mem
+	wg.Week = wk
+	wg.Clock = ck
+
+	return wg
 }
 
 func main() {
@@ -111,14 +103,10 @@ func callbackHandler(c *gin.Context) {
 					}
 
 					str := strings.Split(message.Text, " ")
-					cm := make(map[string]string, 0)
-					wk := make(map[string]*ClockGroup, 0)
-					cm[str[1]] = res.DisplayName
-					cg := SetClock(cm)
-					wk[str[0]] = cg
-					wg := SetWeek(wk)
+					wg := SetWeekGroup(res.DisplayName, str[0], str[1])
+					sWg = append(sWg, wg)
 
-					s, err := json.Marshal(wg)
+					s, err := json.Marshal(sWg)
 					if err != nil {
 						fmt.Printf("Error: %s", err)
 						return
@@ -136,14 +124,10 @@ func callbackHandler(c *gin.Context) {
 					}
 
 					str := strings.Split(message.Text, " ")
-					cm := make(map[string]string, 0)
-					wk := make(map[string]*ClockGroup, 0)
-					cm[str[1]] = res.DisplayName
-					cg := SetClock(cm)
-					wk[str[0]] = cg
-					wg := SetWeek(wk)
+					wg := SetWeekGroup(res.DisplayName, str[0], str[1])
+					sWg = append(sWg, wg)
 
-					s, err := json.Marshal(wg)
+					s, err := json.Marshal(sWg)
 					if err != nil {
 						fmt.Printf("Error: %s", err)
 						return
@@ -161,14 +145,10 @@ func callbackHandler(c *gin.Context) {
 					}
 
 					str := strings.Split(message.Text, " ")
-					cm := make(map[string]string, 0)
-					wk := make(map[string]*ClockGroup, 0)
-					cm[str[1]] = res.DisplayName
-					cg := SetClock(cm)
-					wk[str[0]] = cg
-					wg := SetWeek(wk)
+					wg := SetWeekGroup(res.DisplayName, str[0], str[1])
+					sWg = append(sWg, wg)
 
-					s, err := json.Marshal(wg)
+					s, err := json.Marshal(sWg)
 					if err != nil {
 						fmt.Printf("Error: %s", err)
 						return
