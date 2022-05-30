@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	MOM = "Monday"
+	MON = "Monday"
 	TUE = "Tuseday"
 	WED = "wednesday"
 	THU = "Thursday"
@@ -28,6 +28,7 @@ var (
 	bot *linebot.Client
 	err error
 	sWg []WeekGroup
+	loc *time.Location
 )
 
 type WeekGroup struct {
@@ -45,6 +46,7 @@ func SetWeekGroup(mem, wk, ck string) (wg WeekGroup) {
 }
 
 func main() {
+	loc, _ = time.LoadLocation("Asia/Taipei")
 	bot, err = linebot.New(os.Getenv("CHANNEL_SECRET"), os.Getenv("CHANNEL_ACCESS_TOKEN"))
 
 	if err != nil {
@@ -58,8 +60,6 @@ func main() {
 }
 
 func getWeek() string {
-	//set timezone
-	loc, _ := time.LoadLocation("Asia/Taipei")
 	t := time.Now().In(loc)
 	return t.Weekday().String()
 }
@@ -79,6 +79,17 @@ func callbackHandler(c *gin.Context) {
 	}
 
 	for _, event := range events {
+		timeStr := time.Now().In(loc).Format("15:04:05")
+		st := strings.Split(timeStr, ":")
+		//晚上十一點砍資料
+		if st[0] == "23" {
+			for k, v := range sWg {
+				if v.Week == getWeek() {
+					sWg = append(sWg[:k], sWg[k+1:]...)
+				}
+			}
+		}
+
 		if event.Type == linebot.EventTypeMessage {
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
@@ -117,7 +128,7 @@ func callbackHandler(c *gin.Context) {
 					}
 				}
 
-				if message.Text == SUN+" 六點" {
+				if message.Text == MON+" 六點" {
 					res, err := bot.GetProfile(event.Source.UserID).Do()
 					if err != nil {
 						log.Println(err.Error())
