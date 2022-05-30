@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/joho/godotenv/autoload"
@@ -48,7 +47,7 @@ func SetWeekGroup(mem, wk, ck string) (wg WeekGroup) {
 }
 
 func main() {
-	loc, _ = time.LoadLocation("Asia/Taipei")
+	// loc, _ = time.LoadLocation("Asia/Taipei")
 	bot, err = linebot.New(os.Getenv("CHANNEL_SECRET"), os.Getenv("CHANNEL_ACCESS_TOKEN"))
 
 	if err != nil {
