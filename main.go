@@ -127,43 +127,14 @@ func callbackHandler(c *gin.Context) {
 				}
 
 				if message.Text == "test" {
-					s := `{
-						"type": "template",
-						"altText": "This is a buttons template",
-						"template": {
-							"type": "buttons",
-							"thumbnailImageUrl": "https://example.com/bot/images/image.jpg",
-							"imageAspectRatio": "rectangle",
-							"imageSize": "cover",
-							"imageBackgroundColor": "#FFFFFF",
-							"title": "Menu",
-							"text": "Please select",
-							"defaultAction": {
-								"type": "uri",
-								"label": "View detail",
-								"uri": "http://example.com/page/123"
-							},
-							"actions": [
-								{
-								  "type": "postback",
-								  "label": "Buy",
-								  "data": "action=buy&itemid=123"
-								},
-								{
-								  "type": "postback",
-								  "label": "Add to cart",
-								  "data": "action=add&itemid=123"
-								},
-								{
-								  "type": "uri",
-								  "label": "View detail",
-								  "uri": "http://example.com/page/123"
-								}
-							]
-						}
-					  }`
-
-					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(s)).Do(); err != nil {
+					template := linebot.NewButtonsTemplate(
+						"https://example.com/bot/images/image.jpg",
+						"",
+						"Please select",
+						linebot.NewPostbackAction("Buy", "action=buy&itemid=123", "", "displayText", "", ""),
+					)
+					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
+					if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
 						log.Println(err.Error())
 					}
 				}
