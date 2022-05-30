@@ -28,19 +28,21 @@ var (
 	bot *linebot.Client
 	err error
 	sWg []WeekGroup
-	loc *time.Location
+	// loc *time.Location
 )
 
 type WeekGroup struct {
-	Week   string `json: "week"`
-	Clock  string `json: "clock"`
-	Member string `json: "member"`
+	Week      string `json: "week"`
+	Clock     string `json: "clock"`
+	Member    string `json: "member"`
+	TimesTamp string `json "times_tamp"`
 }
 
 func SetWeekGroup(mem, wk, ck string) (wg WeekGroup) {
 	wg.Member = mem
 	wg.Week = wk
 	wg.Clock = ck
+	wg.TimesTamp = ""
 
 	return wg
 }
@@ -59,10 +61,18 @@ func main() {
 	r.Run()
 }
 
-func getWeek() string {
-	t := time.Now().In(loc)
-	return t.Weekday().String()
-}
+// func getWeek() string {
+// 	t := time.Now().In(loc)
+// 	return t.Weekday().String()
+// }
+
+// func deleteJob() {
+// 	for k, v := range sWg {
+// 		if v.TimesTamp == "" {
+// 			sWg = append(sWg[:k], sWg[k+1:]...)
+// 		}
+// 	}
+// }
 
 func callbackHandler(c *gin.Context) {
 	defer c.Request.Body.Close()
@@ -79,17 +89,6 @@ func callbackHandler(c *gin.Context) {
 	}
 
 	for _, event := range events {
-		timeStr := time.Now().In(loc).Format("15:04:05")
-		st := strings.Split(timeStr, ":")
-		//晚上十一點砍資料
-		if st[0] == "23" {
-			for k, v := range sWg {
-				if v.Week == getWeek() {
-					sWg = append(sWg[:k], sWg[k+1:]...)
-				}
-			}
-		}
-
 		if event.Type == linebot.EventTypeMessage {
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
@@ -128,23 +127,44 @@ func callbackHandler(c *gin.Context) {
 					}
 				}
 
-				if message.Text == MON+" 六點" {
-					res, err := bot.GetProfile(event.Source.UserID).Do()
-					if err != nil {
-						log.Println(err.Error())
-					}
+				if message.Text == "test" {
+					s := `{
+						"type": "template",
+						"altText": "This is a buttons template",
+						"template": {
+							"type": "buttons",
+							"thumbnailImageUrl": "https://example.com/bot/images/image.jpg",
+							"imageAspectRatio": "rectangle",
+							"imageSize": "cover",
+							"imageBackgroundColor": "#FFFFFF",
+							"title": "Menu",
+							"text": "Please select",
+							"defaultAction": {
+								"type": "uri",
+								"label": "View detail",
+								"uri": "http://example.com/page/123"
+							},
+							"actions": [
+								{
+								  "type": "postback",
+								  "label": "Buy",
+								  "data": "action=buy&itemid=123"
+								},
+								{
+								  "type": "postback",
+								  "label": "Add to cart",
+								  "data": "action=add&itemid=123"
+								},
+								{
+								  "type": "uri",
+								  "label": "View detail",
+								  "uri": "http://example.com/page/123"
+								}
+							]
+						}
+					  }`
 
-					str := strings.Split(message.Text, " ")
-					wg := SetWeekGroup(res.DisplayName, str[0], str[1])
-					sWg = append(sWg, wg)
-
-					s, err := json.Marshal(sWg)
-					if err != nil {
-						fmt.Printf("Error: %s", err)
-						return
-					}
-
-					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(string(s))).Do(); err != nil {
+					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(s)).Do(); err != nil {
 						log.Println(err.Error())
 					}
 				}
