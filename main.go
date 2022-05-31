@@ -127,12 +127,20 @@ func callbackHandler(c *gin.Context) {
 				}
 
 				if message.Text == "test" {
-					template := linebot.NewButtonsTemplate(
-						"https://example.com/bot/images/image.jpg",
-						"",
-						"Please select",
-						linebot.NewPostbackAction("Buy", "action=buy&itemid=123", "", "displayText", "", ""),
-					)
+					template := linebot.NewCarouselTemplate(linebot.NewCarouselColumn(
+						"https://example.com/bot/images/item1.jpg",
+						"this is menu",
+						"description",
+						linebot.NewPostbackAction("Buy", "action=buy&itemid=111", "", "", "", ""),
+						linebot.NewPostbackAction("Add to cart", "action=add&itemid=111", "", "", "", ""),
+						linebot.NewPostbackAction("Buy", "action=buy&itemid=123", "", "", linebot.InputOptionOpenKeyboard, "text"),
+						linebot.NewURIAction("View detail", "https://example.com/page/111"),
+					))
+					// "https://example.com/bot/images/image.jpg",
+					// "",
+					// "Please select",
+					// linebot.NewPostbackAction("Buy", "action=buy&itemid=123", "", "displayText", "", ""),
+					// )
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
 					if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
 						log.Println(err.Error())
