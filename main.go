@@ -127,8 +127,8 @@ func callbackHandler(c *gin.Context) {
 							"https://www.facebook.com/win2fitness/photos/a.593850231091748/595671197576318/",
 							date2+" "+times2,
 							"好韻健身房",
-							linebot.NewPostbackAction("參加", date+"&"+times+"&參加&"+res.DisplayName, "", "", "", ""),
-							linebot.NewPostbackAction("取消參加", date+"&"+times+"&取消參加&"+res.DisplayName, "", "", "", ""),
+							linebot.NewPostbackAction("參加", date2+"&"+times2+"&參加&"+res.DisplayName, "", "", "", ""),
+							linebot.NewPostbackAction("取消參加", date2+"&"+times2+"&取消參加&"+res.DisplayName, "", "", "", ""),
 						))
 
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
@@ -140,20 +140,15 @@ func callbackHandler(c *gin.Context) {
 		}
 		if event.Postback.Data != "" {
 			str := strings.Split(event.Postback.Data, "&")
-			if str[2] == "參加" {
-				for _, v := range sWg {
-					if v.Member == str[3] && v.Week == str[0] && v.Clock == str[1] {
+			for k, v := range sWg {
+				if v.Member == str[3] && v.Week == str[0] && v.Clock == str[1] {
+					if str[2] == "參加" {
 						continue
 					}
+					sWg = append(sWg[:k], sWg[k+1:]...)
 				}
 				wg := SetWeekGroup(str[3], str[0], str[1])
 				sWg = append(sWg, wg)
-			} else if str[2] == "取消參加" {
-				for k, v := range sWg {
-					if v.Member == str[3] && v.Week == str[0] && v.Clock == str[1] {
-						sWg = append(sWg[:k], sWg[k+1:]...)
-					}
-				}
 			}
 
 			s, err := json.Marshal(sWg)
