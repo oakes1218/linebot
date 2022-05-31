@@ -88,12 +88,6 @@ func callbackHandler(c *gin.Context) {
 	}
 
 	for _, event := range events {
-		if event.Postback.Data != "" {
-			if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("Get: "+event.Postback.Data+" , \n OK!")).Do(); err != nil {
-				log.Println(err.Error())
-			}
-		}
-
 		if event.Type == linebot.EventTypeMessage {
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
@@ -179,6 +173,11 @@ func callbackHandler(c *gin.Context) {
 						log.Println(err.Error())
 					}
 				}
+			}
+		}
+		if event.Postback.Data != "" {
+			if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("Get: "+event.Postback.Data+" , \n OK!")).Do(); err != nil {
+				log.Println(err.Error())
 			}
 		}
 	}
