@@ -88,6 +88,12 @@ func callbackHandler(c *gin.Context) {
 	}
 
 	for _, event := range events {
+		if event.Postback.Data != "" {
+			if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("Get: "+event.Postback.Data+" , \n OK!")).Do(); err != nil {
+				log.Println(err.Error())
+			}
+		}
+
 		if event.Type == linebot.EventTypeMessage {
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
@@ -131,21 +137,20 @@ func callbackHandler(c *gin.Context) {
 					if err != nil {
 						log.Println(err.Error())
 					}
+
 					template1 := linebot.NewCarouselTemplate(linebot.NewCarouselColumn(
 						"https://www.facebook.com/win2fitness/photos/a.593850231091748/595671197576318/",
 						"2022-06-13",
 						"好韻健身房",
 						linebot.NewPostbackAction("參加", "action=參加&user="+res.DisplayName, "", "參加人員"+res.DisplayName, "", ""),
-						linebot.NewPostbackAction("不參加", "action=不參加&user="+res.DisplayName, "", "", "", ""),
-						// linebot.NewURIAction("View detail", "https://example.com/page/111"),
+						linebot.NewPostbackAction("取消參加", "action=不參加&user="+res.DisplayName, "", "", "", ""),
 					),
 						linebot.NewCarouselColumn(
 							"https://www.facebook.com/win2fitness/photos/a.593850231091748/595671197576318/",
 							"2022-06-17",
 							"好韻健身房",
 							linebot.NewPostbackAction("參加", "action=buy&itemid=111", "", "", "", ""),
-							linebot.NewPostbackAction("不參加", "action=add&itemid=111", "", "", "", ""),
-							// linebot.NewURIAction("View detail", "https://example.com/page/111"),
+							linebot.NewPostbackAction("取消參加", "action=add&itemid=111", "", "", "", ""),
 						))
 
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template1)
