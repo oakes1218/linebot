@@ -28,6 +28,10 @@ var (
 	err error
 	sWg []WeekGroup
 	// loc *time.Location
+	date   string = "2022-06-17"
+	times  string = "18:00"
+	date2  string = "2022-06-17"
+	times2 string = "19:00"
 )
 
 type WeekGroup struct {
@@ -105,78 +109,60 @@ func callbackHandler(c *gin.Context) {
 
 				}
 
-				if message.Text == SAT+" 六點" {
-					res, err := bot.GetProfile(event.Source.UserID).Do()
-					if err != nil {
-						log.Println(err.Error())
-					}
-
-					str := strings.Split(message.Text, " ")
-					wg := SetWeekGroup(res.DisplayName, str[0], str[1])
-					sWg = append(sWg, wg)
-
-					s, err := json.Marshal(sWg)
-					if err != nil {
-						fmt.Printf("Error: %s", err)
-						return
-					}
-
-					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(string(s))).Do(); err != nil {
-						log.Println(err.Error())
-					}
-				}
-
 				if message.Text == "test" {
 					res, err := bot.GetProfile(event.Source.UserID).Do()
 					if err != nil {
 						log.Println(err.Error())
 					}
 
-					template1 := linebot.NewCarouselTemplate(linebot.NewCarouselColumn(
-						"https://www.facebook.com/win2fitness/photos/a.593850231091748/595671197576318/",
-						"2022-06-13",
-						"好韻健身房",
-						linebot.NewPostbackAction("參加", "action=參加&user="+res.DisplayName, "", "參加人員"+res.DisplayName, "", ""),
-						linebot.NewPostbackAction("取消參加", "action=不參加&user="+res.DisplayName, "", "", "", ""),
-					),
+					template := linebot.NewCarouselTemplate(
 						linebot.NewCarouselColumn(
 							"https://www.facebook.com/win2fitness/photos/a.593850231091748/595671197576318/",
-							"2022-06-17",
+							date+" "+times,
 							"好韻健身房",
-							linebot.NewPostbackAction("參加", "action=buy&itemid=111", "", "", "", ""),
-							linebot.NewPostbackAction("取消參加", "action=add&itemid=111", "", "", "", ""),
+							linebot.NewPostbackAction("參加", date+"&"+times+"&參加&"+res.DisplayName, "", "", "", ""),
+							linebot.NewPostbackAction("取消參加", date+"&"+times+"&取消參加&"+res.DisplayName, "", "", "", ""),
+						),
+						linebot.NewCarouselColumn(
+							"https://www.facebook.com/win2fitness/photos/a.593850231091748/595671197576318/",
+							date2+" "+times2,
+							"好韻健身房",
+							linebot.NewPostbackAction("參加", date+"&"+times+"&參加&"+res.DisplayName, "", "", "", ""),
+							linebot.NewPostbackAction("取消參加", date+"&"+times+"&取消參加&"+res.DisplayName, "", "", "", ""),
 						))
 
-					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template1)
+					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
 					if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
-						log.Println(err.Error())
-					}
-				}
-
-				if message.Text == SAT+" 七點" {
-					res, err := bot.GetProfile(event.Source.UserID).Do()
-					if err != nil {
-						log.Println(err.Error())
-					}
-
-					str := strings.Split(message.Text, " ")
-					wg := SetWeekGroup(res.DisplayName, str[0], str[1])
-					sWg = append(sWg, wg)
-
-					s, err := json.Marshal(sWg)
-					if err != nil {
-						fmt.Printf("Error: %s", err)
-						return
-					}
-
-					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(string(s))).Do(); err != nil {
 						log.Println(err.Error())
 					}
 				}
 			}
 		}
 		if event.Postback.Data != "" {
-			if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("Get: "+event.Postback.Data+" , \n OK!")).Do(); err != nil {
+			str := strings.Split(event.Postback.Data, "&")
+			if str[2] == "參加" {
+				for _, v := range sWg {
+					if v.Member == str[3] && v.Week == str[0] && v.Clock == str[1] {
+						continue
+					}
+				}
+				wg := SetWeekGroup(str[3], str[0], str[1])
+				sWg = append(sWg, wg)
+			} else if str[2] == "取消參加" {
+				for k, v := range sWg {
+					if v.Member == str[3] && v.Week == str[0] && v.Clock == str[1] {
+						sWg = append(sWg[:k], sWg[k+1:]...)
+					}
+				}
+			}
+
+			s, err := json.Marshal(sWg)
+			if err != nil {
+				fmt.Printf("Error: %s", err)
+				return
+			}
+
+			if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(string(s))).Do(); err != nil {
 				log.Println(err.Error())
 			}
 		}
