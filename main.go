@@ -127,22 +127,26 @@ func callbackHandler(c *gin.Context) {
 				}
 
 				if message.Text == "test" {
-					template := linebot.NewCarouselTemplate(linebot.NewCarouselColumn(
-						"https://example.com/bot/images/item1.jpg",
-						"this is menu",
-						"description",
-						linebot.NewPostbackAction("Buy", "action=buy&itemid=111", "", "", "", ""),
-						linebot.NewPostbackAction("Add to cart", "action=add&itemid=111", "", "", "", ""),
-						// linebot.NewPostbackAction("Buy", "action=buy&itemid=123", "", "", linebot.InputOptionOpenKeyboard, "text"),
-						linebot.NewURIAction("View detail", "https://example.com/page/111"),
+					template1 := linebot.NewCarouselTemplate(linebot.NewCarouselColumn(
+						"https://www.facebook.com/win2fitness/photos/a.593850231091748/595671197576318/",
+						"2022-06-13",
+						"好韻健身房",
+						linebot.NewPostbackAction("參加", "action=buy&itemid=111", "", "", "", ""),
+						linebot.NewPostbackAction("不參加", "action=add&itemid=111", "", "", "", ""),
+						// linebot.NewURIAction("View detail", "https://example.com/page/111"),
 					))
-					// "https://example.com/bot/images/image.jpg",
-					// "",
-					// "Please select",
-					// linebot.NewPostbackAction("Buy", "action=buy&itemid=123", "", "displayText", "", ""),
-					// )
-					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
-					if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
+					template2 := linebot.NewCarouselTemplate(linebot.NewCarouselColumn(
+						"https://www.facebook.com/win2fitness/photos/a.593850231091748/595671197576318/",
+						"2022-06-17",
+						"好韻健身房",
+						linebot.NewPostbackAction("參加", "action=buy&itemid=111", "", "", "", ""),
+						linebot.NewPostbackAction("不參加", "action=add&itemid=111", "", "", "", ""),
+						// linebot.NewURIAction("View detail", "https://example.com/page/111"),
+					))
+
+					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template1)
+					msg2 := linebot.NewTemplateMessage("Sorry :(, please update your app.", template2)
+					if _, err = bot.ReplyMessage(event.ReplyToken, msg, msg2).Do(); err != nil {
 						log.Println(err.Error())
 					}
 				}
