@@ -127,12 +127,16 @@ func callbackHandler(c *gin.Context) {
 				}
 
 				if message.Text == "test" {
+					res, err := bot.GetProfile(event.Source.UserID).Do()
+					if err != nil {
+						log.Println(err.Error())
+					}
 					template1 := linebot.NewCarouselTemplate(linebot.NewCarouselColumn(
 						"https://www.facebook.com/win2fitness/photos/a.593850231091748/595671197576318/",
 						"2022-06-13",
 						"好韻健身房",
-						linebot.NewPostbackAction("參加", "action=buy&itemid=111", "", "", "", ""),
-						linebot.NewPostbackAction("不參加", "action=add&itemid=111", "", "", "", ""),
+						linebot.NewPostbackAction("參加", "action=參加&user="+res.DisplayName, "", "參加人員"+res.DisplayName, "", ""),
+						linebot.NewPostbackAction("不參加", "action=不參加&user="+res.DisplayName, "", "", "", ""),
 						// linebot.NewURIAction("View detail", "https://example.com/page/111"),
 					),
 						linebot.NewCarouselColumn(
