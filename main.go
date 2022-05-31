@@ -135,22 +135,19 @@ func callbackHandler(c *gin.Context) {
 		}
 		if event.Postback.Data != "" {
 			str := strings.Split(event.Postback.Data, "&")
-			if len(sWg) == 0 {
-				wg := SetWeekGroup(str[3], str[0], str[1])
-				sWg = append(sWg, wg)
-			}
-
 			for k, v := range sWg {
 				if v.Member == str[3] && v.Week == str[0] && v.Clock == str[1] {
 					if str[2] == "參加" {
-						continue
+						break
+					} else if str[2] == "取消參加" {
+						sWg = append(sWg[:k], sWg[k+1:]...)
+						break
 					}
-					sWg = append(sWg[:k], sWg[k+1:]...)
 				}
-				wg := SetWeekGroup(str[3], str[0], str[1])
-				sWg = append(sWg, wg)
 			}
 
+			wg := SetWeekGroup(str[3], str[0], str[1])
+			sWg = append(sWg, wg)
 			s, err := json.Marshal(sWg)
 			if err != nil {
 				fmt.Printf("Error: %s", err)
