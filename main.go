@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/joho/godotenv/autoload"
@@ -24,34 +25,37 @@ const (
 )
 
 var (
-	bot *linebot.Client
-	err error
-	sWg []WeekGroup
-	// loc *time.Location
 	date   string = "2022-06-17"
 	times  string = "18:00"
 	date2  string = "2022-06-17"
 	times2 string = "19:00"
 )
 
+var (
+	bot *linebot.Client
+	err error
+	sWg []WeekGroup
+	loc *time.Location
+)
+
 type WeekGroup struct {
-	Week      string `json: "week"`
-	Clock     string `json: "clock"`
-	Member    string `json: "member"`
-	TimesTamp string `json "times_tamp"`
+	Week      string    `json: "week"`
+	Clock     string    `json: "clock"`
+	Member    string    `json: "member"`
+	TimesTamp time.Time `json "times_tamp"`
 }
 
 func SetWeekGroup(mem, wk, ck string) (wg WeekGroup) {
 	wg.Member = mem
 	wg.Week = wk
 	wg.Clock = ck
-	wg.TimesTamp = ""
+	wg.TimesTamp = getTime()
 
 	return wg
 }
 
 func main() {
-	// loc, _ = time.LoadLocation("Asia/Taipei")
+	loc, _ = time.LoadLocation("Asia/Taipei")
 	bot, err = linebot.New(os.Getenv("CHANNEL_SECRET"), os.Getenv("CHANNEL_ACCESS_TOKEN"))
 
 	if err != nil {
@@ -64,18 +68,9 @@ func main() {
 	r.Run()
 }
 
-// func getWeek() string {
-// 	t := time.Now().In(loc)
-// 	return t.Weekday().String()
-// }
-
-// func deleteJob() {
-// 	for k, v := range sWg {
-// 		if v.TimesTamp == "" {
-// 			sWg = append(sWg[:k], sWg[k+1:]...)
-// 		}
-// 	}
-// }
+func getTime() time.Time {
+	return time.Now().In(loc)
+}
 
 func callbackHandler(c *gin.Context) {
 	defer c.Request.Body.Close()
@@ -140,6 +135,11 @@ func callbackHandler(c *gin.Context) {
 		}
 		if event.Postback.Data != "" {
 			str := strings.Split(event.Postback.Data, "&")
+			if len(sWg) == 0 {
+				wg := SetWeekGroup(str[3], str[0], str[1])
+				sWg = append(sWg, wg)
+			}
+
 			for k, v := range sWg {
 				if v.Member == str[3] && v.Week == str[0] && v.Clock == str[1] {
 					if str[2] == "參加" {
