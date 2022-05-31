@@ -133,7 +133,7 @@ func callbackHandler(c *gin.Context) {
 						"description",
 						linebot.NewPostbackAction("Buy", "action=buy&itemid=111", "", "", "", ""),
 						linebot.NewPostbackAction("Add to cart", "action=add&itemid=111", "", "", "", ""),
-						linebot.NewPostbackAction("Buy", "action=buy&itemid=123", "", "", linebot.InputOptionOpenKeyboard, "text"),
+						// linebot.NewPostbackAction("Buy", "action=buy&itemid=123", "", "", linebot.InputOptionOpenKeyboard, "text"),
 						linebot.NewURIAction("View detail", "https://example.com/page/111"),
 					))
 					// "https://example.com/bot/images/image.jpg",
