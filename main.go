@@ -134,19 +134,18 @@ func callbackHandler(c *gin.Context) {
 						linebot.NewPostbackAction("參加", "action=buy&itemid=111", "", "", "", ""),
 						linebot.NewPostbackAction("不參加", "action=add&itemid=111", "", "", "", ""),
 						// linebot.NewURIAction("View detail", "https://example.com/page/111"),
-					))
-					template2 := linebot.NewCarouselTemplate(linebot.NewCarouselColumn(
-						"https://www.facebook.com/win2fitness/photos/a.593850231091748/595671197576318/",
-						"2022-06-17",
-						"好韻健身房",
-						linebot.NewPostbackAction("參加", "action=buy&itemid=111", "", "", "", ""),
-						linebot.NewPostbackAction("不參加", "action=add&itemid=111", "", "", "", ""),
-						// linebot.NewURIAction("View detail", "https://example.com/page/111"),
-					))
+					),
+						linebot.NewCarouselColumn(
+							"https://www.facebook.com/win2fitness/photos/a.593850231091748/595671197576318/",
+							"2022-06-17",
+							"好韻健身房",
+							linebot.NewPostbackAction("參加", "action=buy&itemid=111", "", "", "", ""),
+							linebot.NewPostbackAction("不參加", "action=add&itemid=111", "", "", "", ""),
+							// linebot.NewURIAction("View detail", "https://example.com/page/111"),
+						))
 
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template1)
-					msg2 := linebot.NewTemplateMessage("Sorry :(, please update your app.", template2)
-					if _, err = bot.ReplyMessage(event.ReplyToken, msg, msg2).Do(); err != nil {
+					if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
 						log.Println(err.Error())
 					}
 				}
