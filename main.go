@@ -138,10 +138,10 @@ func callbackHandler(c *gin.Context) {
 			for k, v := range sWg {
 				if v.Member == str[3] && v.Week == str[0] && v.Clock == str[1] {
 					if str[2] == "參加" {
-						break
+						return
 					} else if str[2] == "取消參加" {
 						sWg = append(sWg[:k], sWg[k+1:]...)
-						break
+						return
 					}
 				}
 			}
