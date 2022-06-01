@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -54,30 +56,30 @@ func SetWeekGroup(mem, wk, ck string) (wg WeekGroup) {
 
 func main() {
 	loc, _ = time.LoadLocation("Asia/Taipei")
-	// var msg1, msg2 string
-	// wg := SetWeekGroup("Eddie", date, times)
-	// sWg = append(sWg, wg)
-	// wg2 := SetWeekGroup("Eddie", date2, times2)
-	// sWg = append(sWg, wg2)
+	var msg1, msg2 string
+	wg := SetWeekGroup("Eddie", date, times)
+	sWg = append(sWg, wg)
+	wg2 := SetWeekGroup("Eddie", date2, times2)
+	sWg = append(sWg, wg2)
 
-	// for _, v := range sWg {
-	// 	if v.Clock == times && v.Week == date {
-	// 		msg1 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + " \n"
-	// 	}
-	// 	if v.Clock == times2 && v.Week == date2 {
-	// 		msg2 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + " \n"
-	// 	}
-	// }
+	for _, v := range sWg {
+		if v.Clock == times && v.Week == date {
+			msg1 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + " \n"
+		}
+		if v.Clock == times2 && v.Week == date2 {
+			msg2 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + " \n"
+		}
+	}
 
-	// s, err := json.Marshal(sWg)
-	// if err != nil {
-	// 	fmt.Printf("Error: %s", err)
-	// 	return
-	// }
+	s, err := json.Marshal(sWg)
+	if err != nil {
+		fmt.Printf("Error: %s", err)
+		return
+	}
 
-	// log.Println(string(s))
-	// log.Println(msg1, msg2)
-	// return
+	log.Println(string(s))
+	log.Println(msg1, msg2)
+	return
 	bot, err = linebot.New(os.Getenv("CHANNEL_SECRET"), os.Getenv("CHANNEL_ACCESS_TOKEN"))
 
 	if err != nil {
@@ -128,6 +130,15 @@ func callbackHandler(c *gin.Context) {
 						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("無參加人員")).Do(); err != nil {
 							log.Println(err.Error())
 						}
+					} else {
+						s, err := json.Marshal(sWg)
+						if err != nil {
+							fmt.Printf("Error: %s", err)
+							return
+						}
+						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(string(s))).Do(); err != nil {
+							log.Println(err.Error())
+						}
 					}
 					// var msg1, msg2 string
 					// for _, v := range sWg {
@@ -158,14 +169,14 @@ func callbackHandler(c *gin.Context) {
 
 					template := linebot.NewCarouselTemplate(
 						linebot.NewCarouselColumn(
-							"https://ithelp.ithome.com.tw/upload/images/20200106/20106865dA0ce7tJLA.png",
+							"https://upload.cc/i1/2022/06/01/1ryUBP.jpeg",
 							date+" "+times,
 							"好韻健身房",
 							linebot.NewPostbackAction("參加", date+"&"+times+"&參加&"+res.DisplayName, "", res.DisplayName+"參加"+date+" "+times+" 時段", "", ""),
 							linebot.NewPostbackAction("取消", date+"&"+times+"&取消&"+res.DisplayName, "", res.DisplayName+"取消"+date+" "+times+" 時段", "", ""),
 						),
 						linebot.NewCarouselColumn(
-							"https://ithelp.ithome.com.tw/upload/images/20200106/20106865dA0ce7tJLA.png",
+							"https://upload.cc/i1/2022/06/01/So1Y6a.jpeg",
 							date2+" "+times2,
 							"好韻健身房",
 							linebot.NewPostbackAction("參加", date2+"&"+times2+"&參加&"+res.DisplayName, "", res.DisplayName+"參加"+date2+" "+times2+" 時段", "", ""),
