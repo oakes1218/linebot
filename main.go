@@ -1,8 +1,6 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -112,13 +110,13 @@ func callbackHandler(c *gin.Context) {
 					// 	}
 					// }
 
-					s, err := json.Marshal(sWg)
-					if err != nil {
-						fmt.Printf("Error: %s", err)
-						return
-					}
+					// s, err := json.Marshal(sWg)
+					// if err != nil {
+					// 	fmt.Printf("Error: %s", err)
+					// 	return
+					// }
 
-					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(string(s)), linebot.NewTextMessage("test")).Do(); err != nil {
+					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("test")).Do(); err != nil {
 						log.Println(err.Error())
 					}
 				}
