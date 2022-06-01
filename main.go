@@ -34,7 +34,7 @@ var (
 var (
 	bot *linebot.Client
 	err error
-	sWg []WeekGroup
+	sWg = make([]WeekGroup, 0)
 	loc *time.Location
 )
 
@@ -90,21 +90,34 @@ func callbackHandler(c *gin.Context) {
 		if event.Type == linebot.EventTypeMessage {
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
-				// 回覆訊息
-				if message.Text == "查看活動" {
-					leftBtn := linebot.NewMessageAction("六點", SAT+" 六點")
-					rightBtn := linebot.NewMessageAction("七點", SAT+" 七點")
-					template := linebot.NewConfirmTemplate("選擇時間", leftBtn, rightBtn)
-					// template := linebot.NewButtonsTemplate("https://www.facebook.com/win2fitness/photos/a.593850231091748/595671197576318/", "日期", "星期幾", leftBtn, rightBtn)
+				if message.Text == "cmd" {
+					leftBtn := linebot.NewMessageAction("查看活動", "查看活動")
+					rightBtn := linebot.NewMessageAction("查看人員", " 查看人員")
+					template := linebot.NewConfirmTemplate("選擇指令", leftBtn, rightBtn)
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
 
-					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("Get: "+message.Text+" , \n OK!"), msg).Do(); err != nil {
+					if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
 						log.Println(err.Error())
 					}
-
 				}
 
-				if message.Text == "test" {
+				if message.Text == "查看人員" {
+					var msg1, msg2 string
+					for _, v := range sWg {
+						if v.Clock == times && v.Week == date {
+							msg1 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + ", \n"
+						}
+						if v.Clock == times2 && v.Week == date2 {
+							msg2 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + ", \n"
+						}
+					}
+
+					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg2)).Do(); err != nil {
+						log.Println(err.Error())
+					}
+				}
+
+				if message.Text == "查看活動" {
 					res, err := bot.GetProfile(event.Source.UserID).Do()
 					if err != nil {
 						log.Println(err.Error())
@@ -112,18 +125,18 @@ func callbackHandler(c *gin.Context) {
 
 					template := linebot.NewCarouselTemplate(
 						linebot.NewCarouselColumn(
-							"https://www.facebook.com/win2fitness/photos/a.593850231091748/595671197576318/",
+							"https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/18517589390991760837712081480139269748076761177356905557600957685868837994497",
 							date+" "+times,
 							"好韻健身房",
-							linebot.NewPostbackAction("參加", date+"&"+times+"&參加&"+res.DisplayName, "", "", "", ""),
-							linebot.NewPostbackAction("取消參加", date+"&"+times+"&取消參加&"+res.DisplayName, "", "", "", ""),
+							linebot.NewPostbackAction("參加", date+"&"+times+"&參加&"+res.DisplayName, "", res.DisplayName+"參加"+date+" "+times+" 時段", "", ""),
+							linebot.NewPostbackAction("取消", date+"&"+times+"&取消&"+res.DisplayName, "", res.DisplayName+"取消"+date+" "+times+" 時段", "", ""),
 						),
 						linebot.NewCarouselColumn(
-							"https://www.facebook.com/win2fitness/photos/a.593850231091748/595671197576318/",
+							"https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/18517589390991760837712081480139269748076761177356905557600957685868837994497",
 							date2+" "+times2,
 							"好韻健身房",
-							linebot.NewPostbackAction("參加", date2+"&"+times2+"&參加&"+res.DisplayName, "", "", "", ""),
-							linebot.NewPostbackAction("取消參加", date2+"&"+times2+"&取消參加&"+res.DisplayName, "", "", "", ""),
+							linebot.NewPostbackAction("參加", date2+"&"+times2+"&參加&"+res.DisplayName, "", res.DisplayName+"參加"+date2+" "+times2+" 時段", "", ""),
+							linebot.NewPostbackAction("取消", date2+"&"+times2+"&取消&"+res.DisplayName, "", res.DisplayName+"取消"+date2+" "+times2+" 時段", "", ""),
 						))
 
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
@@ -139,11 +152,14 @@ func callbackHandler(c *gin.Context) {
 				if v.Member == str[3] && v.Week == str[0] && v.Clock == str[1] {
 					if str[2] == "參加" {
 						return
-					} else if str[2] == "取消參加" {
+					} else if str[2] == "取消" {
 						sWg = append(sWg[:k], sWg[k+1:]...)
 						return
 					}
 				}
+			}
+			if str[2] == "取消" {
+				return
 			}
 
 			wg := SetWeekGroup(str[3], str[0], str[1])
