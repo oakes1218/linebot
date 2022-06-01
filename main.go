@@ -125,7 +125,7 @@ func callbackHandler(c *gin.Context) {
 					}
 				}
 
-				if message.Text == "test" {
+				if message.Text == "查看人員" {
 					if len(sWg) == 0 {
 						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("無參加人員")).Do(); err != nil {
 							log.Println(err.Error())
@@ -160,14 +160,14 @@ func callbackHandler(c *gin.Context) {
 
 					template := linebot.NewCarouselTemplate(
 						linebot.NewCarouselColumn(
-							"https://zh-tw.photo-ac.com/photo/23689552/%E5%8D%A1%E5%93%88%E6%8B%89%E6%B5%B7%E7%81%98",
+							"https://www.icloud.com/photos/#0f9AV00OFIR_bV9osPqaJA9Xw",
 							date+" "+times,
 							"好韻健身房",
 							linebot.NewPostbackAction("參加", date+"&"+times+"&參加&"+res.DisplayName, "", res.DisplayName+"參加"+date+" "+times+" 時段", "", ""),
 							linebot.NewPostbackAction("取消", date+"&"+times+"&取消&"+res.DisplayName, "", res.DisplayName+"取消"+date+" "+times+" 時段", "", ""),
 						),
 						linebot.NewCarouselColumn(
-							"https://zh-tw.photo-ac.com/photo/23689552/%E5%8D%A1%E5%93%88%E6%8B%89%E6%B5%B7%E7%81%98",
+							"https://www.icloud.com/photos/#0f9AV00OFIR_bV9osPqaJA9Xw",
 							date2+" "+times2,
 							"好韻健身房",
 							linebot.NewPostbackAction("參加", date2+"&"+times2+"&參加&"+res.DisplayName, "", res.DisplayName+"參加"+date2+" "+times2+" 時段", "", ""),
