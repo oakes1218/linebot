@@ -125,14 +125,13 @@ func callbackHandler(c *gin.Context) {
 					}
 				}
 
-				if message.Text == "查看人員" {
-					var msg1, msg2 string
+				if message.Text == "test" {
 					if len(sWg) == 0 {
 						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("無參加人員")).Do(); err != nil {
 							log.Println(err.Error())
 						}
 					}
-
+					var msg1, msg2 string
 					for _, v := range sWg {
 						if v.Clock == times && v.Week == date {
 							msg1 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + " \n"
