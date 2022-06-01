@@ -112,7 +112,13 @@ func callbackHandler(c *gin.Context) {
 						}
 					}
 
-					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg2)).Do(); err != nil {
+					s, err := json.Marshal(sWg)
+					if err != nil {
+						fmt.Printf("Error: %s", err)
+						return
+					}
+
+					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg1), linebot.NewTextMessage(msg2), linebot.NewTextMessage(string(s))).Do(); err != nil {
 						log.Println(err.Error())
 					}
 				}
@@ -164,15 +170,6 @@ func callbackHandler(c *gin.Context) {
 
 			wg := SetWeekGroup(str[3], str[0], str[1])
 			sWg = append(sWg, wg)
-			s, err := json.Marshal(sWg)
-			if err != nil {
-				fmt.Printf("Error: %s", err)
-				return
-			}
-
-			if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(string(s))).Do(); err != nil {
-				log.Println(err.Error())
-			}
 		}
 	}
 }
