@@ -131,12 +131,15 @@ func callbackHandler(c *gin.Context) {
 							log.Println(err.Error())
 						}
 					} else {
+						var msg1, msg2 string
+						msg1 = "qwe"
+						msg2 = "asd"
 						s, err := json.Marshal(sWg)
 						if err != nil {
 							fmt.Printf("Error: %s", err)
 							return
 						}
-						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(string(s))).Do(); err != nil {
+						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg1), linebot.NewTextMessage(msg2), linebot.NewTextMessage(string(s))).Do(); err != nil {
 							log.Println(err.Error())
 						}
 					}
@@ -176,7 +179,7 @@ func callbackHandler(c *gin.Context) {
 							linebot.NewPostbackAction("取消", date+"&"+times+"&取消&"+res.DisplayName, "", res.DisplayName+"取消"+date+" "+times+" 時段", "", ""),
 						),
 						linebot.NewCarouselColumn(
-							"https://upload.cc/i1/2022/06/01/So1Y6a.jpeg",
+							"https://upload.cc/i1/2022/06/01/1ryUBP.jpeg",
 							date2+" "+times2,
 							"好韻健身房",
 							linebot.NewPostbackAction("參加", date2+"&"+times2+"&參加&"+res.DisplayName, "", res.DisplayName+"參加"+date2+" "+times2+" 時段", "", ""),
