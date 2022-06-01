@@ -134,6 +134,15 @@ func callbackHandler(c *gin.Context) {
 						var msg1, msg2 string
 						msg1 = "qwe"
 						msg2 = "asd"
+						for _, v := range sWg {
+							if v.Clock == times && v.Week == date {
+								msg1 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + " \n"
+							}
+							if v.Clock == times2 && v.Week == date2 {
+								msg2 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + " \n"
+							}
+						}
+
 						s, err := json.Marshal(sWg)
 						if err != nil {
 							fmt.Printf("Error: %s", err)
