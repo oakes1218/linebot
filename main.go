@@ -102,15 +102,15 @@ func callbackHandler(c *gin.Context) {
 				}
 
 				if message.Text == "查看人員" {
-					var msg1, msg2 string
-					for _, v := range sWg {
-						if v.Clock == times && v.Week == date {
-							msg1 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + ", \n"
-						}
-						if v.Clock == times2 && v.Week == date2 {
-							msg2 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + ", \n"
-						}
-					}
+					// var msg1, msg2 string
+					// for _, v := range sWg {
+					// 	if v.Clock == times && v.Week == date {
+					// 		msg1 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + ", \n"
+					// 	}
+					// 	if v.Clock == times2 && v.Week == date2 {
+					// 		msg2 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + ", \n"
+					// 	}
+					// }
 
 					s, err := json.Marshal(sWg)
 					if err != nil {
@@ -118,7 +118,7 @@ func callbackHandler(c *gin.Context) {
 						return
 					}
 
-					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg1), linebot.NewTextMessage(msg2), linebot.NewTextMessage(string(s))).Do(); err != nil {
+					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(string(s))).Do(); err != nil {
 						log.Println(err.Error())
 					}
 				}
