@@ -118,7 +118,7 @@ func callbackHandler(c *gin.Context) {
 						return
 					}
 
-					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(string(s))).Do(); err != nil {
+					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(string(s)), linebot.NewTextMessage("test")).Do(); err != nil {
 						log.Println(err.Error())
 					}
 				}
@@ -131,14 +131,14 @@ func callbackHandler(c *gin.Context) {
 
 					template := linebot.NewCarouselTemplate(
 						linebot.NewCarouselColumn(
-							"https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/18517589390991760837712081480139269748076761177356905557600957685868837994497",
+							"https://zh-tw.photo-ac.com/photo/23689552/%E5%8D%A1%E5%93%88%E6%8B%89%E6%B5%B7%E7%81%98",
 							date+" "+times,
 							"好韻健身房",
 							linebot.NewPostbackAction("參加", date+"&"+times+"&參加&"+res.DisplayName, "", res.DisplayName+"參加"+date+" "+times+" 時段", "", ""),
 							linebot.NewPostbackAction("取消", date+"&"+times+"&取消&"+res.DisplayName, "", res.DisplayName+"取消"+date+" "+times+" 時段", "", ""),
 						),
 						linebot.NewCarouselColumn(
-							"https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/18517589390991760837712081480139269748076761177356905557600957685868837994497",
+							"https://zh-tw.photo-ac.com/photo/23689552/%E5%8D%A1%E5%93%88%E6%8B%89%E6%B5%B7%E7%81%98",
 							date2+" "+times2,
 							"好韻健身房",
 							linebot.NewPostbackAction("參加", date2+"&"+times2+"&參加&"+res.DisplayName, "", res.DisplayName+"參加"+date2+" "+times2+" 時段", "", ""),
