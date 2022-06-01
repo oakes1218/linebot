@@ -103,6 +103,12 @@ func callbackHandler(c *gin.Context) {
 
 				if message.Text == "test" {
 					var msg1, msg2 string
+					if len(sWg) == 0 {
+						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("test1")).Do(); err != nil {
+							log.Println(err.Error())
+						}
+					}
+
 					for _, v := range sWg {
 						if v.Clock == times && v.Week == date {
 							msg1 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + ", \n"
