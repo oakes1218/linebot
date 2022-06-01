@@ -125,12 +125,16 @@ func callbackHandler(c *gin.Context) {
 								msg1 += "人員: " + v.Member + " \n"
 							}
 							if v.Clock == times2 && v.Week == date2 {
-								tital2 = "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + " \n"
+								tital2 = " 時間: " + v.Week + " " + v.Clock + " \n"
 								msg2 += "人員: " + v.Member + " \n"
 							}
 						}
 
-						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(tital1+msg1), linebot.NewTextMessage(tital2+msg2)).Do(); err != nil {
+						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(tital1+msg1)).Do(); err != nil {
+							log.Println(err.Error())
+						}
+
+						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(tital2+msg2)).Do(); err != nil {
 							log.Println(err.Error())
 						}
 					}
