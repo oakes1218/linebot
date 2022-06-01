@@ -1,8 +1,6 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -116,7 +114,7 @@ func callbackHandler(c *gin.Context) {
 			case *linebot.TextMessage:
 				if message.Text == "cmd" {
 					leftBtn := linebot.NewMessageAction("查看活動", "查看活動")
-					rightBtn := linebot.NewMessageAction("查看人員", " test")
+					rightBtn := linebot.NewMessageAction("參加人員", "參加人員")
 					template := linebot.NewConfirmTemplate("選擇指令", leftBtn, rightBtn)
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
 
@@ -125,31 +123,31 @@ func callbackHandler(c *gin.Context) {
 					}
 				}
 
-				if message.Text == "test" {
+				if message.Text == "參加人員" {
 					if len(sWg) == 0 {
 						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("無參加人員")).Do(); err != nil {
 							log.Println(err.Error())
 						}
 					}
-					var msg1, msg2 string
-					for _, v := range sWg {
-						if v.Clock == times && v.Week == date {
-							msg1 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + " \n"
-						}
-						if v.Clock == times2 && v.Week == date2 {
-							msg2 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + " \n"
-						}
-					}
+					// var msg1, msg2 string
+					// for _, v := range sWg {
+					// 	if v.Clock == times && v.Week == date {
+					// 		msg1 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + " \n"
+					// 	}
+					// 	if v.Clock == times2 && v.Week == date2 {
+					// 		msg2 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + " \n"
+					// 	}
+					// }
 
-					s, err := json.Marshal(sWg)
-					if err != nil {
-						fmt.Printf("Error: %s", err)
-						return
-					}
+					// s, err := json.Marshal(sWg)
+					// if err != nil {
+					// 	fmt.Printf("Error: %s", err)
+					// 	return
+					// }
 
-					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg1), linebot.NewTextMessage(msg2), linebot.NewTextMessage(string(s))).Do(); err != nil {
-						log.Println(err.Error())
-					}
+					// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg1), linebot.NewTextMessage(msg2), linebot.NewTextMessage(string(s))).Do(); err != nil {
+					// 	log.Println(err.Error())
+					// }
 				}
 
 				if message.Text == "查看活動" {
@@ -160,14 +158,14 @@ func callbackHandler(c *gin.Context) {
 
 					template := linebot.NewCarouselTemplate(
 						linebot.NewCarouselColumn(
-							"https://www.icloud.com/photos/#0f9AV00OFIR_bV9osPqaJA9Xw",
+							"https://ithelp.ithome.com.tw/upload/images/20200106/20106865dA0ce7tJLA.png",
 							date+" "+times,
 							"好韻健身房",
 							linebot.NewPostbackAction("參加", date+"&"+times+"&參加&"+res.DisplayName, "", res.DisplayName+"參加"+date+" "+times+" 時段", "", ""),
 							linebot.NewPostbackAction("取消", date+"&"+times+"&取消&"+res.DisplayName, "", res.DisplayName+"取消"+date+" "+times+" 時段", "", ""),
 						),
 						linebot.NewCarouselColumn(
-							"https://www.icloud.com/photos/#0f9AV00OFIR_bV9osPqaJA9Xw",
+							"https://ithelp.ithome.com.tw/upload/images/20200106/20106865dA0ce7tJLA.png",
 							date2+" "+times2,
 							"好韻健身房",
 							linebot.NewPostbackAction("參加", date2+"&"+times2+"&參加&"+res.DisplayName, "", res.DisplayName+"參加"+date2+" "+times2+" 時段", "", ""),
