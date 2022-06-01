@@ -56,30 +56,6 @@ func SetWeekGroup(mem, wk, ck string) (wg WeekGroup) {
 
 func main() {
 	loc, _ = time.LoadLocation("Asia/Taipei")
-	// var msg1, msg2 string
-	// wg := SetWeekGroup("Eddie", date, times)
-	// sWg = append(sWg, wg)
-	// wg2 := SetWeekGroup("Eddie", date2, times2)
-	// sWg = append(sWg, wg2)
-
-	// for _, v := range sWg {
-	// 	if v.Clock == times && v.Week == date {
-	// 		msg1 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + " \n"
-	// 	}
-	// 	if v.Clock == times2 && v.Week == date2 {
-	// 		msg2 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + " \n"
-	// 	}
-	// }
-
-	// s, err := json.Marshal(sWg)
-	// if err != nil {
-	// 	fmt.Printf("Error: %s", err)
-	// 	return
-	// }
-
-	// log.Println(string(s))
-	// log.Println(msg1, msg2)
-	// return
 	bot, err = linebot.New(os.Getenv("CHANNEL_SECRET"), os.Getenv("CHANNEL_ACCESS_TOKEN"))
 
 	if err != nil {
@@ -125,53 +101,39 @@ func callbackHandler(c *gin.Context) {
 					}
 				}
 
+				if message.Text == "LoG" {
+					s, err := json.Marshal(sWg)
+					if err != nil {
+						fmt.Printf("Error: %s", err)
+						return
+					}
+					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(string(s))).Do(); err != nil {
+						log.Println(err.Error())
+					}
+				}
+
 				if message.Text == "參加人員" {
 					if len(sWg) == 0 {
 						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("無參加人員")).Do(); err != nil {
 							log.Println(err.Error())
 						}
 					} else {
-						var msg1, msg2, allMsg string
-						// msg1 = ""
-						// msg2 = ""
+						var tital1, tital2, msg1, msg2 string
 						for _, v := range sWg {
 							if v.Clock == times && v.Week == date {
-								msg1 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + " \n"
+								tital1 = " 時間: " + v.Week + " " + v.Clock + " \n"
+								msg1 += "人員: " + v.Member + " \n"
 							}
 							if v.Clock == times2 && v.Week == date2 {
-								msg2 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + " \n"
+								tital2 = "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + " \n"
+								msg2 += "人員: " + v.Member + " \n"
 							}
 						}
-						allMsg = msg1 + msg2
 
-						s, err := json.Marshal(sWg)
-						if err != nil {
-							fmt.Printf("Error: %s", err)
-							return
-						}
-						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(allMsg), linebot.NewTextMessage(string(s))).Do(); err != nil {
+						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(tital1+msg1), linebot.NewTextMessage(tital2+msg2)).Do(); err != nil {
 							log.Println(err.Error())
 						}
 					}
-					// var msg1, msg2 string
-					// for _, v := range sWg {
-					// 	if v.Clock == times && v.Week == date {
-					// 		msg1 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + " \n"
-					// 	}
-					// 	if v.Clock == times2 && v.Week == date2 {
-					// 		msg2 += "人員: " + v.Member + " 時間: " + v.Week + " " + v.Clock + " \n"
-					// 	}
-					// }
-
-					// s, err := json.Marshal(sWg)
-					// if err != nil {
-					// 	fmt.Printf("Error: %s", err)
-					// 	return
-					// }
-
-					// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg1), linebot.NewTextMessage(msg2), linebot.NewTextMessage(string(s))).Do(); err != nil {
-					// 	log.Println(err.Error())
-					// }
 				}
 
 				if message.Text == "查看活動" {
