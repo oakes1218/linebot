@@ -118,7 +118,7 @@ func callbackHandler(c *gin.Context) {
 							log.Println(err.Error())
 						}
 					} else {
-						var tital1, tital2, msg1, msg2 string
+						var tital1, tital2, msg1, msg2, allmsg string
 						for _, v := range sWg {
 							if v.Clock == times && v.Week == date {
 								tital1 = " 時間: " + v.Week + " " + v.Clock + " \n"
@@ -130,15 +130,9 @@ func callbackHandler(c *gin.Context) {
 							}
 						}
 
-						if tital1 != "" {
-							if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(tital1+msg1)).Do(); err != nil {
-								log.Println(err.Error())
-							}
-						}
-						if tital2 != "" {
-							if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(tital2+msg2)).Do(); err != nil {
-								log.Println(err.Error())
-							}
+						allmsg = tital1 + msg1 + tital2 + msg2
+						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(allmsg)).Do(); err != nil {
+							log.Println(err.Error())
 						}
 					}
 				}
