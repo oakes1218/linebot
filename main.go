@@ -99,7 +99,7 @@ func callbackHandler(c *gin.Context) {
 					}
 				}
 
-				if message.Text == "查看人員" {
+				if message.Text == "test" {
 					// var msg1, msg2 string
 					// for _, v := range sWg {
 					// 	if v.Clock == times && v.Week == date {
@@ -150,6 +150,7 @@ func callbackHandler(c *gin.Context) {
 				}
 			}
 		}
+
 		if event.Postback.Data != "" {
 			str := strings.Split(event.Postback.Data, "&")
 			for k, v := range sWg {
