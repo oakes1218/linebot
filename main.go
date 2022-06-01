@@ -116,7 +116,7 @@ func callbackHandler(c *gin.Context) {
 			case *linebot.TextMessage:
 				if message.Text == "cmd" {
 					leftBtn := linebot.NewMessageAction("查看活動", "查看活動")
-					rightBtn := linebot.NewMessageAction("查看人員", " 查看人員")
+					rightBtn := linebot.NewMessageAction("查看人員", " test")
 					template := linebot.NewConfirmTemplate("選擇指令", leftBtn, rightBtn)
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
 
@@ -125,7 +125,7 @@ func callbackHandler(c *gin.Context) {
 					}
 				}
 
-				if message.Text == "查看人員" {
+				if message.Text == "test" {
 					if len(sWg) == 0 {
 						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("無參加人員")).Do(); err != nil {
 							log.Println(err.Error())
