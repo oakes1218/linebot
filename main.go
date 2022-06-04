@@ -267,7 +267,7 @@ func callbackHandler(c *gin.Context) {
 					var cc []*linebot.CarouselColumn
 					picture := "https://upload.cc/i1/2022/06/01/1ryUBP.jpeg"
 					res, err := bot.GetProfile(event.Source.UserID).Do()
-					log.Println(res.DisplayName, res.UserID)
+					log.Println(res.DisplayName, res.UserID, event.Source.UserID, event.Source.GroupID)
 					if err != nil {
 						log.Println(err.Error())
 					}
