@@ -143,6 +143,10 @@ func callbackHandler(c *gin.Context) {
 							sMg = append(sMg[:k], sMg[k+1:]...)
 						}
 					}
+
+					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(str[2]+" 活動 ： "+str[3]+" 時段 ： "+str[0]+str[1])).Do(); err != nil {
+						log.Println(err.Error())
+					}
 					return
 				}
 
@@ -152,9 +156,16 @@ func callbackHandler(c *gin.Context) {
 							return
 						} else if str[2] == "取消" {
 							sMg = append(sMg[:k], sMg[k+1:]...)
+							if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(str[2]+" 活動 ： "+str[3]+" 時段 ： "+str[0]+str[1])).Do(); err != nil {
+								log.Println(err.Error())
+							}
 							return
 						}
 					}
+				}
+
+				if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(str[2]+" 活動 ： "+str[3]+" 時段 ： "+str[0]+str[1])).Do(); err != nil {
+					log.Println(err.Error())
 				}
 
 				if str[2] == "取消" {
@@ -167,7 +178,7 @@ func callbackHandler(c *gin.Context) {
 		case linebot.EventTypeMessage:
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
-				if message.Text == "cmd" {
+				if message.Text == "功能列表" {
 					leftBtn := linebot.NewMessageAction("查看活動", "查看活動")
 					rightBtn := linebot.NewMessageAction("參加人員", "參加人員")
 					template := linebot.NewConfirmTemplate("新增活動指令： \n格式 ： date&time&activity \nex. 2022-01-01&00:00&散步步", leftBtn, rightBtn)
@@ -271,19 +282,13 @@ func callbackHandler(c *gin.Context) {
 
 					var cc []*linebot.CarouselColumn
 					picture := "https://upload.cc/i1/2022/06/01/1ryUBP.jpeg"
-					res, err := bot.GetGroupMemberProfile(event.Source.GroupID, event.Source.UserID).Do()
-					if err != nil {
-						log.Println(err.Error())
-					}
-
 					for _, v := range sA {
 						cc = append(cc, linebot.NewCarouselColumn(
 							picture,
 							v.Date+" "+v.Times,
 							v.Name,
-							linebot.NewPostbackAction("參加", v.Date+"&"+v.Times+"&參加&"+res.DisplayName+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
-							linebot.NewPostbackAction("取消", v.Date+"&"+v.Times+"&取消&"+res.DisplayName+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
-							linebot.NewPostbackAction("刪除活動", strconv.FormatInt(v.Number, 10)+"&刪除", "", res.DisplayName+"刪除 活動 ： "+v.Name+" 時段 ： "+v.Date+" "+v.Times, "", ""),
+							linebot.NewPostbackAction("參加", v.Date+"&"+v.Times+"&參加&"+v.Name+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
+							linebot.NewPostbackAction("取消", v.Date+"&"+v.Times+"&取消&"+v.Name+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
 						))
 					}
 
