@@ -185,6 +185,14 @@ func callbackHandler(c *gin.Context) {
 					}
 				}
 
+				if message.Text == "clearAll" {
+					sMg = sMg[:0]
+					sA = sA[:0]
+					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("Success clearAll")).Do(); err != nil {
+						log.Println(err.Error())
+					}
+				}
+
 				if message.Text != "" {
 					var msg string
 					sa := strings.Split(message.Text, "&")
