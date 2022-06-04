@@ -266,26 +266,7 @@ func callbackHandler(c *gin.Context) {
 
 					var cc []*linebot.CarouselColumn
 					picture := "https://upload.cc/i1/2022/06/01/1ryUBP.jpeg"
-					res, err := bot.GetProfile(event.Source.UserID).Do()
-					log.Println(res.DisplayName, res.UserID, event.Source.UserID, event.Source.GroupID)
-					resp, err := client.Get("https://api.line.me/v2/bot/group/" + event.Source.GroupID + "/member/" + event.Source.UserID)
-					defer resp.Body.Close()
-					if err != nil {
-						fmt.Println(err.Error())
-					}
-
-					if resp.StatusCode == 200 {
-						fmt.Println("喚醒heroku")
-					} else {
-						fmt.Println(resp.Status)
-						sitemap, err := ioutil.ReadAll(resp.Body)
-						if err != nil {
-							log.Fatal(err)
-							return
-						}
-						fmt.Println(string(sitemap))
-					}
-
+					res, err := bot.GetGroupMemberProfile(event.Source.GroupID, event.Source.UserID).Do()
 					if err != nil {
 						log.Println(err.Error())
 					}
