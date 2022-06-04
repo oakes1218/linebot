@@ -122,7 +122,8 @@ func callbackHandler(c *gin.Context) {
 	}
 
 	for _, event := range events {
-		if event.Type == linebot.EventTypeMessage {
+		switch event.Type {
+		case linebot.EventTypePostback:
 			if event.Postback.Data != "" {
 				log.Println(111111)
 				log.Println(sMg)
@@ -156,7 +157,7 @@ func callbackHandler(c *gin.Context) {
 				sMg = append(sMg, wg)
 				log.Println(sMg)
 			}
-
+		case linebot.EventTypeMessage:
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
 				if message.Text == "cmd" {
@@ -288,6 +289,8 @@ func callbackHandler(c *gin.Context) {
 					}
 				}
 			}
+		default:
+			log.Printf("Unknown event: %v", event)
 		}
 	}
 }
