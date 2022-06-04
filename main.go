@@ -136,7 +136,7 @@ func callbackHandler(c *gin.Context) {
 
 					for k, v := range sMg {
 						if v.Number == str[0] {
-							sA = append(sA[:k], sA[k+1:]...)
+							sMg = append(sMg[:k], sMg[k+1:]...)
 							return
 						}
 					}
