@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -56,6 +57,11 @@ func SetWeekGroup(mem, wk, ck string) (wg WeekGroup) {
 
 func main() {
 	loc, _ = time.LoadLocation("Asia/Taipei")
+	ticker := time.NewTicker(3 * time.Second)
+	defer ticker.Stop()
+	client := &http.Client{}
+	go runtime(ticker, client)
+
 	bot, err = linebot.New(os.Getenv("CHANNEL_SECRET"), os.Getenv("CHANNEL_ACCESS_TOKEN"))
 
 	if err != nil {
@@ -70,6 +76,31 @@ func main() {
 
 func getTime() time.Time {
 	return time.Now().In(loc)
+}
+
+func runtime(ticker *time.Ticker, client *http.Client) {
+	for {
+		select {
+		case <-ticker.C:
+			resp, err := client.PostForm("https://linesebot.herokuapp.com/callback", nil)
+			defer resp.Body.Close()
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+
+			if resp.StatusCode == 200 {
+				fmt.Println("喚醒heroku")
+			} else {
+				fmt.Println(resp.Status)
+				sitemap, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					log.Fatal(err)
+					return
+				}
+				fmt.Println(string(sitemap))
+			}
+		}
+	}
 }
 
 func callbackHandler(c *gin.Context) {
