@@ -71,6 +71,11 @@ func main() {
 
 	r := gin.Default()
 	r.POST("/callback", callbackHandler)
+	r.GET("/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "pong",
+		})
+	})
 	r.Run()
 }
 
@@ -82,9 +87,8 @@ func runtime(ticker *time.Ticker, client *http.Client) {
 	for {
 		select {
 		case <-ticker.C:
-			resp, err := client.PostForm("https://linesebot.herokuapp.com/callback", nil)
+			resp, err := client.Get("https://linesebot.herokuapp.com/ping")
 			defer resp.Body.Close()
-			resp.Header.Add("X-Line-Signature", os.Getenv("CHANNEL_SECRET"))
 			if err != nil {
 				fmt.Println(err.Error())
 			}
