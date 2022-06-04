@@ -199,11 +199,11 @@ func callbackHandler(c *gin.Context) {
 						}
 
 						if !rd.MatchString(sa[0]) {
-							msg += "日期格式錯誤 \n"
+							msg += "日期格式錯誤 "
 						}
 
 						if !rt.MatchString(sa[1]) {
-							msg += "時間格式錯誤 \n"
+							msg += "時間格式錯誤 "
 						}
 
 						if msg == "" {
@@ -236,6 +236,7 @@ func callbackHandler(c *gin.Context) {
 								}
 							}
 							allmsg += tital + msg
+							tital = ""
 							msg = ""
 						}
 
