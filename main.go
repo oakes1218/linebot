@@ -163,7 +163,7 @@ func callbackHandler(c *gin.Context) {
 				if message.Text == "cmd" {
 					leftBtn := linebot.NewMessageAction("查看活動", "查看活動")
 					rightBtn := linebot.NewMessageAction("參加人員", "參加人員")
-					template := linebot.NewConfirmTemplate("新增活動指令： \n date&time&activity \n ex. 2022-01-01&00:00&散步步", leftBtn, rightBtn)
+					template := linebot.NewConfirmTemplate("新增活動指令： \n 格式 ： date&time&activity \n ex. 2022-01-01&00:00&散步步", leftBtn, rightBtn)
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
 
 					if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
@@ -206,7 +206,7 @@ func callbackHandler(c *gin.Context) {
 						if msg == "" {
 							var ac Activity
 							ac.Number = time.Now().In(loc).Unix()
-							ac.Name = sa[3]
+							ac.Name = sa[2]
 							ac.Date = sa[0]
 							ac.Times = sa[1]
 							sA = append(sA, ac)
