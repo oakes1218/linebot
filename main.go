@@ -221,25 +221,33 @@ func callbackHandler(c *gin.Context) {
 						return
 					}
 
-					var cc []*linebot.CarouselColumn
+					// var cc []*linebot.CarouselColumn
 					picture := "https://upload.cc/i1/2022/06/01/1ryUBP.jpeg"
 					res, err := bot.GetProfile(event.Source.UserID).Do()
 					if err != nil {
 						log.Println(err.Error())
 					}
 
-					for _, v := range sA {
-						cc = append(cc, linebot.NewCarouselColumn(
-							picture,
-							v.date+" "+v.times,
-							v.name,
-							linebot.NewPostbackAction("參加", v.date+"&"+v.times+"&參加&"+res.DisplayName+"&"+strconv.FormatInt(v.number, 10), "", res.DisplayName+"參加"+v.date+" "+v.times+" 時段", "", ""),
-							linebot.NewPostbackAction("取消", v.date+"&"+v.times+"&取消&"+res.DisplayName+"&"+strconv.FormatInt(v.number, 10), "", res.DisplayName+"取消"+v.date+" "+v.times+" 時段", "", ""),
-							linebot.NewPostbackAction("刪除活動", strconv.FormatInt(v.number, 10)+"&刪除", "", res.DisplayName+"刪除 活動 ： "+v.name+" 時段 ： "+v.date+" "+v.times, "", ""),
-						))
-					}
+					// for _, v := range sA {
+					// cc = append(cc, linebot.NewCarouselColumn(
+					// 	picture,
+					// 	v.date+" "+v.times,
+					// 	v.name,
+					// 	linebot.NewPostbackAction("參加", v.date+"&"+v.times+"&參加&"+res.DisplayName+"&"+strconv.FormatInt(v.number, 10), "", res.DisplayName+"參加"+v.date+" "+v.times+" 時段", "", ""),
+					// 	linebot.NewPostbackAction("取消", v.date+"&"+v.times+"&取消&"+res.DisplayName+"&"+strconv.FormatInt(v.number, 10), "", res.DisplayName+"取消"+v.date+" "+v.times+" 時段", "", ""),
+					// 	linebot.NewPostbackAction("刪除活動", strconv.FormatInt(v.number, 10)+"&刪除", "", res.DisplayName+"刪除 活動 ： "+v.name+" 時段 ： "+v.date+" "+v.times, "", ""),
+					// ))
+					// }
 
-					template := linebot.NewCarouselTemplate(cc...)
+					template := linebot.NewCarouselTemplate(linebot.NewCarouselColumn(
+						picture,
+						sA[0].date+" "+sA[0].times,
+						sA[0].name,
+						linebot.NewPostbackAction("參加", sA[0].date+"&"+sA[0].times+"&參加&"+res.DisplayName+"&"+strconv.FormatInt(sA[0].number, 10), "", res.DisplayName+"參加"+sA[0].date+" "+sA[0].times+" 時段", "", ""),
+						linebot.NewPostbackAction("取消", sA[0].date+"&"+sA[0].times+"&取消&"+res.DisplayName+"&"+strconv.FormatInt(sA[0].number, 10), "", res.DisplayName+"取消"+sA[0].date+" "+sA[0].times+" 時段", "", ""),
+						linebot.NewPostbackAction("刪除活動", strconv.FormatInt(sA[0].number, 10)+"&刪除", "", res.DisplayName+"刪除 活動 ： "+sA[0].name+" 時段 ： "+sA[0].date+" "+sA[0].times, "", ""),
+					))
+
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
 					if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
 						log.Println(err.Error())
