@@ -133,6 +133,13 @@ func callbackHandler(c *gin.Context) {
 							return
 						}
 					}
+
+					for k, v := range sMg {
+						if v.Number == str[0] {
+							sA = append(sA[:k], sA[k+1:]...)
+							return
+						}
+					}
 				}
 
 				for k, v := range sMg {
@@ -222,7 +229,7 @@ func callbackHandler(c *gin.Context) {
 					} else {
 						var tital, msg, allmsg string
 						for _, v := range sA {
-							tital = "活動名稱 ： " + v.Name + " 時間: " + v.Date + " " + v.Times + " \n"
+							tital += "活動名稱 ： " + v.Name + " 時間: " + v.Date + " " + v.Times + " \n"
 							for _, v1 := range sMg {
 								if v.Date == v1.Date && v.Times == v1.Clock && strconv.FormatInt(v.Number, 10) == v1.Number {
 									msg += "人員: " + v1.Member + " \n"
@@ -257,8 +264,8 @@ func callbackHandler(c *gin.Context) {
 							picture,
 							v.Date+" "+v.Times,
 							v.Name,
-							linebot.NewPostbackAction("參加", v.Date+"&"+v.Times+"&參加&"+res.DisplayName+"&"+strconv.FormatInt(v.Number, 10), "", res.DisplayName+" 參加 活動"+v.Name+" 時段："+v.Date+" "+v.Times, "", ""),
-							linebot.NewPostbackAction("取消", v.Date+"&"+v.Times+"&取消&"+res.DisplayName+"&"+strconv.FormatInt(v.Number, 10), "", res.DisplayName+" 取消 活動"+v.Name+" 時段："+v.Date+" "+v.Times, "", ""),
+							linebot.NewPostbackAction("參加", v.Date+"&"+v.Times+"&參加&"+res.DisplayName+"&"+strconv.FormatInt(v.Number, 10), "", res.DisplayName+" 參加 活動： "+v.Name+" \n時段："+v.Date+" "+v.Times, "", ""),
+							linebot.NewPostbackAction("取消", v.Date+"&"+v.Times+"&取消&"+res.DisplayName+"&"+strconv.FormatInt(v.Number, 10), "", res.DisplayName+" 取消 活動： "+v.Name+" \n時段："+v.Date+" "+v.Times, "", ""),
 							linebot.NewPostbackAction("刪除活動", strconv.FormatInt(v.Number, 10)+"&刪除", "", res.DisplayName+"刪除 活動 ： "+v.Name+" 時段 ： "+v.Date+" "+v.Times, "", ""),
 						))
 					}
