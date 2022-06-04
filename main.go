@@ -123,6 +123,40 @@ func callbackHandler(c *gin.Context) {
 
 	for _, event := range events {
 		if event.Type == linebot.EventTypeMessage {
+			if event.Postback.Data != "" {
+				log.Println(111111)
+				log.Println(sMg)
+				log.Println(event.Postback.Data)
+				str := strings.Split(event.Postback.Data, "&")
+				if str[1] == "刪除" {
+					for k, v := range sA {
+						if strconv.FormatInt(v.number, 10) == str[0] {
+							sA = append(sA[:k], sA[k+1:]...)
+							return
+						}
+					}
+				}
+
+				for k, v := range sMg {
+					if v.member == str[3] && v.date == str[0] && v.clock == str[1] && v.number == str[4] {
+						if str[2] == "參加" {
+							return
+						} else if str[2] == "取消" {
+							sMg = append(sMg[:k], sMg[k+1:]...)
+							return
+						}
+					}
+				}
+
+				if str[2] == "取消" {
+					return
+				}
+
+				wg := SetWeekGroup(str[3], str[0], str[1], str[4])
+				sMg = append(sMg, wg)
+				log.Println(sMg)
+			}
+
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
 				if message.Text == "cmd" {
@@ -254,40 +288,6 @@ func callbackHandler(c *gin.Context) {
 					}
 				}
 			}
-		}
-
-		if event.Postback.Data != "" {
-			log.Println(111111)
-			log.Println(sMg)
-			log.Println(event.Postback.Data)
-			str := strings.Split(event.Postback.Data, "&")
-			if str[1] == "刪除" {
-				for k, v := range sA {
-					if strconv.FormatInt(v.number, 10) == str[0] {
-						sA = append(sA[:k], sA[k+1:]...)
-						return
-					}
-				}
-			}
-
-			for k, v := range sMg {
-				if v.member == str[3] && v.date == str[0] && v.clock == str[1] && v.number == str[4] {
-					if str[2] == "參加" {
-						return
-					} else if str[2] == "取消" {
-						sMg = append(sMg[:k], sMg[k+1:]...)
-						return
-					}
-				}
-			}
-
-			if str[2] == "取消" {
-				return
-			}
-
-			wg := SetWeekGroup(str[3], str[0], str[1], str[4])
-			sMg = append(sMg, wg)
-			log.Println(sMg)
 		}
 	}
 }
