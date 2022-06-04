@@ -36,24 +36,24 @@ var (
 )
 
 type MemGroup struct {
-	member string `json: "member"`
-	date   string `json: "date"`
-	clock  string `json: "clock"`
-	number string `json "number"`
+	Member string `json: "member"`
+	Date   string `json: "date"`
+	Clock  string `json: "clock"`
+	Number string `json "number"`
 }
 
 type Activity struct {
-	number int64  `json: "nember"`
-	name   string `json: "name"`
-	date   string `json: "date"`
-	times  string `json: "date"`
+	Number int64  `json: "nember"`
+	Name   string `json: "name"`
+	Date   string `json: "date"`
+	Times  string `json: "date"`
 }
 
 func SetWeekGroup(mem, dt, ck, id string) (mg MemGroup) {
-	mg.member = mem
-	mg.date = dt
-	mg.clock = ck
-	mg.number = id
+	mg.Member = mem
+	mg.Date = dt
+	mg.Clock = ck
+	mg.Number = id
 
 	return mg
 }
@@ -131,7 +131,7 @@ func callbackHandler(c *gin.Context) {
 				str := strings.Split(event.Postback.Data, "&")
 				if str[1] == "刪除" {
 					for k, v := range sA {
-						if strconv.FormatInt(v.number, 10) == str[0] {
+						if strconv.FormatInt(v.Number, 10) == str[0] {
 							sA = append(sA[:k], sA[k+1:]...)
 							return
 						}
@@ -139,7 +139,7 @@ func callbackHandler(c *gin.Context) {
 				}
 
 				for k, v := range sMg {
-					if v.member == str[3] && v.date == str[0] && v.clock == str[1] && v.number == str[4] {
+					if v.Member == str[3] && v.Date == str[0] && v.Clock == str[1] && v.Number == str[4] {
 						if str[2] == "參加" {
 							return
 						} else if str[2] == "取消" {
@@ -210,12 +210,12 @@ func callbackHandler(c *gin.Context) {
 								log.Println(err.Error())
 							}
 
-							ac.number = time.Now().In(loc).Unix()
-							ac.name = sa[0]
-							ac.date = sa[1]
-							ac.times = sa[2]
+							ac.Number = time.Now().In(loc).Unix()
+							ac.Name = sa[0]
+							ac.Date = sa[1]
+							ac.Times = sa[2]
 							sA = append(sA, ac)
-							msg = "ID : " + strconv.FormatInt(ac.number, 10) + " " + res.DisplayName + "新增活動 ： " + sa[3] + " 時間 ： " + sa[0] + " " + sa[1]
+							msg += "ID : " + strconv.FormatInt(ac.Number, 10) + " " + res.DisplayName + "新增活動 ： " + sa[3] + " 時間 ： " + sa[0] + " " + sa[1]
 						}
 
 						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg)).Do(); err != nil {
@@ -234,9 +234,9 @@ func callbackHandler(c *gin.Context) {
 						var tital, msg, allmsg string
 						for _, v := range sA {
 							for _, v1 := range sMg {
-								if v.date == v1.date && v.times == v1.clock && strconv.FormatInt(v.number, 10) == v1.number {
-									tital = "活動 ： " + v.name + " 時間: " + v.date + " " + v.times + " \n"
-									msg += "人員: " + v1.member + " \n"
+								if v.Date == v1.Date && v.Times == v1.Clock && strconv.FormatInt(v.Number, 10) == v1.Number {
+									tital = "活動 ： " + v.Name + " 時間: " + v.Date + " " + v.Times + " \n"
+									msg += "人員: " + v1.Member + " \n"
 								}
 							}
 						}
@@ -266,11 +266,11 @@ func callbackHandler(c *gin.Context) {
 					for _, v := range sA {
 						cc = append(cc, linebot.NewCarouselColumn(
 							picture,
-							v.date+" "+v.times,
-							v.name,
-							linebot.NewPostbackAction("參加", v.date+"&"+v.times+"&參加&"+res.DisplayName+"&"+strconv.FormatInt(v.number, 10), "", res.DisplayName+"參加"+v.date+" "+v.times+" 時段", "", ""),
-							linebot.NewPostbackAction("取消", v.date+"&"+v.times+"&取消&"+res.DisplayName+"&"+strconv.FormatInt(v.number, 10), "", res.DisplayName+"取消"+v.date+" "+v.times+" 時段", "", ""),
-							linebot.NewPostbackAction("刪除活動", strconv.FormatInt(v.number, 10)+"&刪除", "", res.DisplayName+"刪除 活動 ： "+v.name+" 時段 ： "+v.date+" "+v.times, "", ""),
+							v.Date+" "+v.Times,
+							v.Name,
+							linebot.NewPostbackAction("參加", v.Date+"&"+v.Times+"&參加&"+res.DisplayName+"&"+strconv.FormatInt(v.Number, 10), "", res.DisplayName+"參加"+v.Date+" "+v.Times+" 時段", "", ""),
+							linebot.NewPostbackAction("取消", v.Date+"&"+v.Times+"&取消&"+res.DisplayName+"&"+strconv.FormatInt(v.Number, 10), "", res.DisplayName+"取消"+v.Date+" "+v.Times+" 時段", "", ""),
+							linebot.NewPostbackAction("刪除活動", strconv.FormatInt(v.Number, 10)+"&刪除", "", res.DisplayName+"刪除 活動 ： "+v.Name+" 時段 ： "+v.Date+" "+v.Times, "", ""),
 						))
 					}
 
