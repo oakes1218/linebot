@@ -135,7 +135,7 @@ func callbackHandler(c *gin.Context) {
 				if message.Text == "cmd" {
 					leftBtn := linebot.NewMessageAction("查看活動", "查看活動")
 					rightBtn := linebot.NewMessageAction("參加人員", "參加人員")
-					template := linebot.NewConfirmTemplate("新增活動指令： \n date&time&activity \n ex. 2022-01-01&00:00&柴柴出任務", leftBtn, rightBtn)
+					template := linebot.NewConfirmTemplate("新增活動指令： \n date&time&activity \n ex. 2022-01-01&00:00&散步步", leftBtn, rightBtn)
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
 
 					if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
@@ -158,8 +158,8 @@ func callbackHandler(c *gin.Context) {
 					var msg string
 					sa := strings.Split(message.Text, "&")
 					if len(sa) == 3 {
-						dRegex := `^[0-9]{4}-[0-9]{2}-[0-9]{2}`
-						tRegex := `^[0-9]{2}:[0-9]{2}`
+						dRegex := `^[0-9]{4}-[0-9]{2}-[0-9]{2}$`
+						tRegex := `^[0-9]{2}:[0-9]{2}$`
 						rd, rErr := regexp.Compile(dRegex)
 						rt, tErr := regexp.Compile(tRegex)
 						if rErr != nil || tErr != nil {
@@ -167,11 +167,11 @@ func callbackHandler(c *gin.Context) {
 							return
 						}
 
-						if rd.MatchString(sa[1]) {
+						if !rd.MatchString(sa[0]) {
 							msg += "日期格式錯誤 \n"
 						}
 
-						if rt.MatchString(sa[2]) {
+						if !rt.MatchString(sa[1]) {
 							msg += "時間格式錯誤 \n"
 						}
 
@@ -197,13 +197,13 @@ func callbackHandler(c *gin.Context) {
 				}
 
 				if message.Text == "參加人員" {
+					log.Println(sA, sWg)
 					if len(sWg) == 0 {
 						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("無參加人員")).Do(); err != nil {
 							log.Println(err.Error())
 						}
 					} else {
 						var tital, msg, allmsg string
-						log.Println(sA, sWg)
 						for _, v := range sA {
 							for _, v1 := range sWg {
 								if v.date == v1.date && v.times == v1.clock && v.number == v1.number {
