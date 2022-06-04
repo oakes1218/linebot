@@ -28,18 +28,11 @@ const (
 )
 
 var (
-	date   string = "2022-06-17"
-	times  string = "18:00"
-	date2  string = "2022-06-17"
-	times2 string = "19:00"
-)
-
-var (
-	bot *linebot.Client
-	err error
-	sMg = make([]MemGroup, 0)
-	sA  = make([]Activity, 0)
-	loc *time.Location
+	bot    *linebot.Client
+	botErr error
+	sMg    = make([]MemGroup, 0)
+	sA     = make([]Activity, 0)
+	loc    *time.Location
 )
 
 type MemGroup struct {
@@ -72,10 +65,10 @@ func main() {
 	client := &http.Client{}
 	go runtime(ticker, client)
 
-	bot, err = linebot.New(os.Getenv("CHANNEL_SECRET"), os.Getenv("CHANNEL_ACCESS_TOKEN"))
+	bot, botErr = linebot.New(os.Getenv("CHANNEL_SECRET"), os.Getenv("CHANNEL_ACCESS_TOKEN"))
 
-	if err != nil {
-		log.Println(err.Error())
+	if botErr != nil {
+		log.Println(botErr.Error())
 		return
 	}
 
@@ -187,7 +180,7 @@ func callbackHandler(c *gin.Context) {
 							ac.date = sa[1]
 							ac.times = sa[2]
 							sA = append(sA, ac)
-							msg = "ID : " + strconv.FormatInt(ac.number, 16) + " " + res.DisplayName + "新增活動 ： " + sa[3] + " 時間 ： " + sa[0] + " " + sa[1]
+							msg = "ID : " + strconv.FormatInt(ac.number, 10) + " " + res.DisplayName + "新增活動 ： " + sa[3] + " 時間 ： " + sa[0] + " " + sa[1]
 						}
 
 						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg)).Do(); err != nil {
@@ -206,7 +199,7 @@ func callbackHandler(c *gin.Context) {
 						var tital, msg, allmsg string
 						for _, v := range sA {
 							for _, v1 := range sMg {
-								if v.date == v1.date && v.times == v1.clock && strconv.FormatInt(v.number, 16) == v1.number {
+								if v.date == v1.date && v.times == v1.clock && strconv.FormatInt(v.number, 10) == v1.number {
 									tital = "活動 ： " + v.name + " 時間: " + v.date + " " + v.times + " \n"
 									msg += "人員: " + v1.member + " \n"
 								}
@@ -240,9 +233,9 @@ func callbackHandler(c *gin.Context) {
 							picture,
 							v.date+" "+v.times,
 							v.name,
-							linebot.NewPostbackAction("參加", v.date+"&"+v.times+"&參加&"+res.DisplayName+"&"+strconv.FormatInt(v.number, 16), "", res.DisplayName+"參加"+v.date+" "+v.times+" 時段", "", ""),
-							linebot.NewPostbackAction("取消", v.date+"&"+v.times+"&取消&"+res.DisplayName+"&"+strconv.FormatInt(v.number, 16), "", res.DisplayName+"取消"+v.date+" "+v.times+" 時段", "", ""),
-							linebot.NewPostbackAction("刪除活動", strconv.FormatInt(v.number, 16)+"&刪除", "", res.DisplayName+"刪除 活動 ： "+v.name+" 時段 ： "+v.date+" "+v.times, "", ""),
+							linebot.NewPostbackAction("參加", v.date+"&"+v.times+"&參加&"+res.DisplayName+"&"+strconv.FormatInt(v.number, 10), "", res.DisplayName+"參加"+v.date+" "+v.times+" 時段", "", ""),
+							linebot.NewPostbackAction("取消", v.date+"&"+v.times+"&取消&"+res.DisplayName+"&"+strconv.FormatInt(v.number, 10), "", res.DisplayName+"取消"+v.date+" "+v.times+" 時段", "", ""),
+							linebot.NewPostbackAction("刪除活動", strconv.FormatInt(v.number, 10)+"&刪除", "", res.DisplayName+"刪除 活動 ： "+v.name+" 時段 ： "+v.date+" "+v.times, "", ""),
 						))
 					}
 
@@ -260,7 +253,7 @@ func callbackHandler(c *gin.Context) {
 			str := strings.Split(event.Postback.Data, "&")
 			if str[1] == "刪除" {
 				for k, v := range sA {
-					if strconv.FormatInt(v.number, 16) == str[0] {
+					if strconv.FormatInt(v.number, 10) == str[0] {
 						sA = append(sA[:k], sA[k+1:]...)
 						return
 					}
@@ -270,6 +263,7 @@ func callbackHandler(c *gin.Context) {
 			for k, v := range sMg {
 				if v.member == str[3] && v.date == str[0] && v.clock == str[1] && v.number == str[4] {
 					if str[2] == "參加" {
+						log.Println(123)
 						return
 					} else if str[2] == "取消" {
 						sMg = append(sMg[:k], sMg[k+1:]...)
@@ -284,6 +278,7 @@ func callbackHandler(c *gin.Context) {
 
 			wg := SetWeekGroup(str[3], str[0], str[1], str[4])
 			sMg = append(sMg, wg)
+			log.Println(sMg)
 		}
 	}
 }
