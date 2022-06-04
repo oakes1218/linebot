@@ -257,6 +257,8 @@ func callbackHandler(c *gin.Context) {
 		}
 
 		if event.Postback.Data != "" {
+			log.Println(111111)
+			log.Println(sMg)
 			log.Println(event.Postback.Data)
 			str := strings.Split(event.Postback.Data, "&")
 			if str[1] == "刪除" {
@@ -271,7 +273,6 @@ func callbackHandler(c *gin.Context) {
 			for k, v := range sMg {
 				if v.member == str[3] && v.date == str[0] && v.clock == str[1] && v.number == str[4] {
 					if str[2] == "參加" {
-						log.Println(123)
 						return
 					} else if str[2] == "取消" {
 						sMg = append(sMg[:k], sMg[k+1:]...)
