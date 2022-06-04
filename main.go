@@ -33,6 +33,7 @@ var (
 	sMg    = make([]MemGroup, 0)
 	sA     = make([]Activity, 0)
 	loc    *time.Location
+	client = &http.Client{}
 )
 
 type MemGroup struct {
@@ -62,7 +63,6 @@ func main() {
 	loc, _ = time.LoadLocation("Asia/Taipei")
 	ticker := time.NewTicker(28 * 60 * time.Second)
 	defer ticker.Stop()
-	client := &http.Client{}
 	go runtime(ticker, client)
 
 	bot, botErr = linebot.New(os.Getenv("CHANNEL_SECRET"), os.Getenv("CHANNEL_ACCESS_TOKEN"))
@@ -243,7 +243,7 @@ func callbackHandler(c *gin.Context) {
 								}
 							}
 							allmsg += tital
-							allmsg += "======================"
+							allmsg += "======================\n"
 							allmsg += msg
 							allmsg += "\n"
 							tital = ""
@@ -268,6 +268,24 @@ func callbackHandler(c *gin.Context) {
 					picture := "https://upload.cc/i1/2022/06/01/1ryUBP.jpeg"
 					res, err := bot.GetProfile(event.Source.UserID).Do()
 					log.Println(res.DisplayName, res.UserID, event.Source.UserID, event.Source.GroupID)
+					resp, err := client.Get("https://api.line.me/v2/bot/group/" + event.Source.GroupID + "/member/" + event.Source.UserID)
+					defer resp.Body.Close()
+					if err != nil {
+						fmt.Println(err.Error())
+					}
+
+					if resp.StatusCode == 200 {
+						fmt.Println("喚醒heroku")
+					} else {
+						fmt.Println(resp.Status)
+						sitemap, err := ioutil.ReadAll(resp.Body)
+						if err != nil {
+							log.Fatal(err)
+							return
+						}
+						fmt.Println(string(sitemap))
+					}
+
 					if err != nil {
 						log.Println(err.Error())
 					}
