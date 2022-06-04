@@ -203,6 +203,7 @@ func callbackHandler(c *gin.Context) {
 						}
 					} else {
 						var tital, msg, allmsg string
+						log.Println(sA, sWg)
 						for _, v := range sA {
 							for _, v1 := range sWg {
 								if v.date == v1.date && v.times == v1.clock && v.number == v1.number {
@@ -255,6 +256,7 @@ func callbackHandler(c *gin.Context) {
 		}
 
 		if event.Postback.Data != "" {
+			log.Println(event.Postback.Data)
 			str := strings.Split(event.Postback.Data, "&")
 			if str[1] == "刪除" {
 				for k, v := range sA {
