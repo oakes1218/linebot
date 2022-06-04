@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -36,6 +37,7 @@ var (
 	bot *linebot.Client
 	err error
 	sWg = make([]WeekGroup, 0)
+	sA  = make([]Activity, 0)
 	loc *time.Location
 )
 
@@ -44,6 +46,12 @@ type WeekGroup struct {
 	Clock     string    `json: "clock"`
 	Member    string    `json: "member"`
 	TimesTamp time.Time `json "times_tamp"`
+}
+
+type Activity struct {
+	name  string `json: "name"`
+	date  string `json: "date"`
+	times string `json: "date"`
 }
 
 func SetWeekGroup(mem, wk, ck string) (wg WeekGroup) {
@@ -148,6 +156,47 @@ func callbackHandler(c *gin.Context) {
 					}
 				}
 
+				if message.Text != "" {
+					var msg string
+					sa := strings.Split(message.Text, "&")
+					if len(sa) == 3 {
+						dRegex := `^[0-9]{4}-[0-9]{2}-[0-9]{2}`
+						tRegex := `^[0-9]{2}:[0-9]{2}`
+						rd, rErr := regexp.Compile(dRegex)
+						rt, tErr := regexp.Compile(tRegex)
+						if rErr != nil || tErr != nil {
+							log.Println(err.Error())
+							return
+						}
+
+						if rd.MatchString(sa[1]) {
+							msg += "日期格式錯誤 \n"
+						}
+
+						if rt.MatchString(sa[2]) {
+							msg += "時間格式錯誤 \n"
+						}
+
+						if msg == "" {
+							var ac Activity
+							res, err := bot.GetProfile(event.Source.UserID).Do()
+							if err != nil {
+								log.Println(err.Error())
+							}
+
+							ac.name = sa[0]
+							ac.date = sa[1]
+							ac.times = sa[2]
+							sA = append(sA, ac)
+							msg = res.DisplayName + "新增活動 ： " + sa[0] + " 時間 ： " + sa[1] + " " + sa[0]
+						}
+
+						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg)).Do(); err != nil {
+							log.Println(err.Error())
+						}
+					}
+				}
+
 				if message.Text == "參加人員" {
 					if len(sWg) == 0 {
 						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("無參加人員")).Do(); err != nil {
@@ -174,26 +223,31 @@ func callbackHandler(c *gin.Context) {
 				}
 
 				if message.Text == "查看活動" {
+					if len(sA) == 0 {
+						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("無活動列表")).Do(); err != nil {
+							log.Println(err.Error())
+						}
+						return
+					}
+
+					var template *linebot.CarouselTemplate
+					picture := "https://upload.cc/i1/2022/06/01/1ryUBP.jpeg"
 					res, err := bot.GetProfile(event.Source.UserID).Do()
 					if err != nil {
 						log.Println(err.Error())
 					}
 
-					template := linebot.NewCarouselTemplate(
-						linebot.NewCarouselColumn(
-							"https://upload.cc/i1/2022/06/01/1ryUBP.jpeg",
-							date+" "+times,
-							"好韻健身房",
+					for _, v := range sA {
+						template = linebot.NewCarouselTemplate(linebot.NewCarouselColumn(
+							picture,
+							v.date+" "+v.times,
+							v.name,
 							linebot.NewPostbackAction("參加", date+"&"+times+"&參加&"+res.DisplayName, "", res.DisplayName+"參加"+date+" "+times+" 時段", "", ""),
 							linebot.NewPostbackAction("取消", date+"&"+times+"&取消&"+res.DisplayName, "", res.DisplayName+"取消"+date+" "+times+" 時段", "", ""),
-						),
-						linebot.NewCarouselColumn(
-							"https://upload.cc/i1/2022/06/01/1ryUBP.jpeg",
-							date2+" "+times2,
-							"好韻健身房",
-							linebot.NewPostbackAction("參加", date2+"&"+times2+"&參加&"+res.DisplayName, "", res.DisplayName+"參加"+date2+" "+times2+" 時段", "", ""),
-							linebot.NewPostbackAction("取消", date2+"&"+times2+"&取消&"+res.DisplayName, "", res.DisplayName+"取消"+date2+" "+times2+" 時段", "", ""),
 						))
+					}
+
+					// template := linebot.NewCarouselTemplate(cc[1])
 
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
 					if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
