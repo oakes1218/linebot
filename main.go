@@ -267,11 +267,13 @@ func callbackHandler(c *gin.Context) {
 					var cc []*linebot.CarouselColumn
 					picture := "https://upload.cc/i1/2022/06/01/1ryUBP.jpeg"
 					res, err := bot.GetProfile(event.Source.UserID).Do()
+					log.Println(res.DisplayName, res.UserID)
 					if err != nil {
 						log.Println(err.Error())
 					}
 
 					for _, v := range sA {
+						log.Println(v)
 						cc = append(cc, linebot.NewCarouselColumn(
 							picture,
 							v.Date+" "+v.Times,
