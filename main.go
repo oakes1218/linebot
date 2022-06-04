@@ -125,9 +125,6 @@ func callbackHandler(c *gin.Context) {
 		switch event.Type {
 		case linebot.EventTypePostback:
 			if event.Postback.Data != "" {
-				log.Println(111111)
-				log.Println(sMg)
-				log.Println(event.Postback.Data)
 				str := strings.Split(event.Postback.Data, "&")
 				if str[1] == "刪除" {
 					for k, v := range sA {
@@ -155,7 +152,6 @@ func callbackHandler(c *gin.Context) {
 
 				wg := SetWeekGroup(str[3], str[0], str[1], str[4])
 				sMg = append(sMg, wg)
-				log.Println(sMg)
 			}
 		case linebot.EventTypeMessage:
 			switch message := event.Message.(type) {
@@ -163,7 +159,7 @@ func callbackHandler(c *gin.Context) {
 				if message.Text == "cmd" {
 					leftBtn := linebot.NewMessageAction("查看活動", "查看活動")
 					rightBtn := linebot.NewMessageAction("參加人員", "參加人員")
-					template := linebot.NewConfirmTemplate("新增活動指令： \n 格式 ： date&time&activity \n ex. 2022-01-01&00:00&散步步", leftBtn, rightBtn)
+					template := linebot.NewConfirmTemplate("新增活動指令： \n格式 ： date&time&activity \nex. 2022-01-01&00:00&散步步", leftBtn, rightBtn)
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
 
 					if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
@@ -219,7 +215,6 @@ func callbackHandler(c *gin.Context) {
 				}
 
 				if message.Text == "參加人員" {
-					log.Println(sA, sMg)
 					if len(sMg) == 0 {
 						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("無參加人員")).Do(); err != nil {
 							log.Println(err.Error())
@@ -227,9 +222,9 @@ func callbackHandler(c *gin.Context) {
 					} else {
 						var tital, msg, allmsg string
 						for _, v := range sA {
+							tital = "活動名稱 ： " + v.Name + " 時間: " + v.Date + " " + v.Times + " \n"
 							for _, v1 := range sMg {
 								if v.Date == v1.Date && v.Times == v1.Clock && strconv.FormatInt(v.Number, 10) == v1.Number {
-									tital = "活動名稱 ： " + v.Name + " 時間: " + v.Date + " " + v.Times + " \n"
 									msg += "人員: " + v1.Member + " \n"
 								}
 							}
@@ -262,8 +257,8 @@ func callbackHandler(c *gin.Context) {
 							picture,
 							v.Date+" "+v.Times,
 							v.Name,
-							linebot.NewPostbackAction("參加", v.Date+"&"+v.Times+"&參加&"+res.DisplayName+"&"+strconv.FormatInt(v.Number, 10), "", res.DisplayName+"參加"+v.Date+" "+v.Times+" 時段", "", ""),
-							linebot.NewPostbackAction("取消", v.Date+"&"+v.Times+"&取消&"+res.DisplayName+"&"+strconv.FormatInt(v.Number, 10), "", res.DisplayName+"取消"+v.Date+" "+v.Times+" 時段", "", ""),
+							linebot.NewPostbackAction("參加", v.Date+"&"+v.Times+"&參加&"+res.DisplayName+"&"+strconv.FormatInt(v.Number, 10), "", res.DisplayName+" 參加 活動"+v.Name+" 時段："+v.Date+" "+v.Times, "", ""),
+							linebot.NewPostbackAction("取消", v.Date+"&"+v.Times+"&取消&"+res.DisplayName+"&"+strconv.FormatInt(v.Number, 10), "", res.DisplayName+" 取消 活動"+v.Name+" 時段："+v.Date+" "+v.Times, "", ""),
 							linebot.NewPostbackAction("刪除活動", strconv.FormatInt(v.Number, 10)+"&刪除", "", res.DisplayName+"刪除 活動 ： "+v.Name+" 時段 ： "+v.Date+" "+v.Times, "", ""),
 						))
 					}
