@@ -124,11 +124,12 @@ func callbackHandler(c *gin.Context) {
 	for _, event := range events {
 		switch event.Type {
 		case linebot.EventTypePostback:
+			res, err := bot.GetGroupMemberProfile(event.Source.GroupID, event.Source.UserID).Do()
+			if err != nil {
+				log.Println(err.Error())
+			}
+
 			if event.Postback.Data != "" {
-				res, err := bot.GetGroupMemberProfile(event.Source.GroupID, event.Source.UserID).Do()
-				if err != nil {
-					log.Println(err.Error())
-				}
 				str := strings.Split(event.Postback.Data, "&")
 				if str[1] == "刪除" {
 					for k, v := range sA {
