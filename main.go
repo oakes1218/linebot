@@ -84,6 +84,7 @@ func runtime(ticker *time.Ticker, client *http.Client) {
 		case <-ticker.C:
 			resp, err := client.PostForm("https://linesebot.herokuapp.com/callback", nil)
 			defer resp.Body.Close()
+			resp.Header.Add("X-Line-Signature", os.Getenv("CHANNEL_SECRET"))
 			if err != nil {
 				fmt.Println(err.Error())
 			}
