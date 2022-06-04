@@ -243,8 +243,9 @@ func callbackHandler(c *gin.Context) {
 								}
 							}
 							allmsg += tital
-							allmsg += "========================"
+							allmsg += "======================"
 							allmsg += msg
+							allmsg += "\n"
 							tital = ""
 							msg = ""
 						}
