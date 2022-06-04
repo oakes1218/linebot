@@ -125,6 +125,10 @@ func callbackHandler(c *gin.Context) {
 		switch event.Type {
 		case linebot.EventTypePostback:
 			if event.Postback.Data != "" {
+				res, err := bot.GetGroupMemberProfile(event.Source.GroupID, event.Source.UserID).Do()
+				if err != nil {
+					log.Println(err.Error())
+				}
 				str := strings.Split(event.Postback.Data, "&")
 				if str[1] == "刪除" {
 					for k, v := range sA {
@@ -142,7 +146,7 @@ func callbackHandler(c *gin.Context) {
 				}
 
 				for k, v := range sMg {
-					if v.Member == str[3] && v.Date == str[0] && v.Clock == str[1] && v.Number == str[4] {
+					if v.Member == res.DisplayName && v.Date == str[0] && v.Clock == str[1] && v.Number == str[4] {
 						if str[2] == "參加" {
 							return
 						} else if str[2] == "取消" {
@@ -156,7 +160,7 @@ func callbackHandler(c *gin.Context) {
 					return
 				}
 
-				wg := SetWeekGroup(str[3], str[0], str[1], str[4])
+				wg := SetWeekGroup(res.DisplayName, str[0], str[1], str[4])
 				sMg = append(sMg, wg)
 			}
 		case linebot.EventTypeMessage:
@@ -272,7 +276,6 @@ func callbackHandler(c *gin.Context) {
 					}
 
 					for _, v := range sA {
-						log.Println(v)
 						cc = append(cc, linebot.NewCarouselColumn(
 							picture,
 							v.Date+" "+v.Times,
