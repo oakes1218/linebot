@@ -205,17 +205,11 @@ func callbackHandler(c *gin.Context) {
 
 						if msg == "" {
 							var ac Activity
-							res, err := bot.GetProfile(event.Source.UserID).Do()
-							if err != nil {
-								log.Println(err.Error())
-							}
-
 							ac.Number = time.Now().In(loc).Unix()
-							ac.Name = sa[0]
-							ac.Date = sa[1]
-							ac.Times = sa[2]
+							ac.Name = sa[3]
+							ac.Date = sa[0]
+							ac.Times = sa[1]
 							sA = append(sA, ac)
-							msg += "ID : " + strconv.FormatInt(ac.Number, 10) + " " + res.DisplayName + "新增活動 ： " + sa[3] + " 時間 ： " + sa[0] + " " + sa[1]
 						}
 
 						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg)).Do(); err != nil {
@@ -235,7 +229,7 @@ func callbackHandler(c *gin.Context) {
 						for _, v := range sA {
 							for _, v1 := range sMg {
 								if v.Date == v1.Date && v.Times == v1.Clock && strconv.FormatInt(v.Number, 10) == v1.Number {
-									tital = "活動 ： " + v.Name + " 時間: " + v.Date + " " + v.Times + " \n"
+									tital = "活動名稱 ： " + v.Name + " 時間: " + v.Date + " " + v.Times + " \n"
 									msg += "人員: " + v1.Member + " \n"
 								}
 							}
