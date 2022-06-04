@@ -130,16 +130,15 @@ func callbackHandler(c *gin.Context) {
 					for k, v := range sA {
 						if strconv.FormatInt(v.Number, 10) == str[0] {
 							sA = append(sA[:k], sA[k+1:]...)
-							return
 						}
 					}
 
 					for k, v := range sMg {
 						if v.Number == str[0] {
 							sMg = append(sMg[:k], sMg[k+1:]...)
-							return
 						}
 					}
+					return
 				}
 
 				for k, v := range sMg {
@@ -243,7 +242,9 @@ func callbackHandler(c *gin.Context) {
 									msg += "人員: " + v1.Member + " \n"
 								}
 							}
-							allmsg += tital + msg
+							allmsg += tital
+							allmsg += "========================"
+							allmsg += msg
 							tital = ""
 							msg = ""
 						}
