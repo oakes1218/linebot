@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -36,29 +37,30 @@ var (
 var (
 	bot *linebot.Client
 	err error
-	sWg = make([]WeekGroup, 0)
+	sWg = make([]MemGroup, 0)
 	sA  = make([]Activity, 0)
 	loc *time.Location
 )
 
-type WeekGroup struct {
-	Week      string    `json: "week"`
-	Clock     string    `json: "clock"`
-	Member    string    `json: "member"`
-	TimesTamp time.Time `json "times_tamp"`
+type MemGroup struct {
+	member string `json: "member"`
+	date   string `json: "date"`
+	clock  string `json: "clock"`
+	number int64  `json "times_tamp"`
 }
 
 type Activity struct {
-	name  string `json: "name"`
-	date  string `json: "date"`
-	times string `json: "date"`
+	number int64  `json: "nember"`
+	name   string `json: "name"`
+	date   string `json: "date"`
+	times  string `json: "date"`
 }
 
-func SetWeekGroup(mem, wk, ck string) (wg WeekGroup) {
-	wg.Member = mem
-	wg.Week = wk
-	wg.Clock = ck
-	wg.TimesTamp = getTime()
+func SetWeekGroup(mem, dt, ck string) (wg MemGroup) {
+	wg.member = mem
+	wg.date = dt
+	wg.clock = ck
+	wg.number = time.Now().In(loc).Unix()
 
 	return wg
 }
@@ -85,10 +87,6 @@ func main() {
 		})
 	})
 	r.Run()
-}
-
-func getTime() time.Time {
-	return time.Now().In(loc)
 }
 
 func runtime(ticker *time.Ticker, client *http.Client) {
@@ -137,7 +135,7 @@ func callbackHandler(c *gin.Context) {
 				if message.Text == "cmd" {
 					leftBtn := linebot.NewMessageAction("查看活動", "查看活動")
 					rightBtn := linebot.NewMessageAction("參加人員", "參加人員")
-					template := linebot.NewConfirmTemplate("選擇指令", leftBtn, rightBtn)
+					template := linebot.NewConfirmTemplate("新增活動指令： \n date&time&activity \n ex. 2022-01-01&00:00&柴柴出任務", leftBtn, rightBtn)
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
 
 					if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
@@ -184,11 +182,12 @@ func callbackHandler(c *gin.Context) {
 								log.Println(err.Error())
 							}
 
+							ac.number = time.Now().In(loc).Unix()
 							ac.name = sa[0]
 							ac.date = sa[1]
 							ac.times = sa[2]
 							sA = append(sA, ac)
-							msg = res.DisplayName + "新增活動 ： " + sa[0] + " 時間 ： " + sa[1] + " " + sa[0]
+							msg = "ID : " + strconv.FormatInt(ac.number, 16) + " " + res.DisplayName + "新增活動 ： " + sa[3] + " 時間 ： " + sa[0] + " " + sa[1]
 						}
 
 						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg)).Do(); err != nil {
@@ -203,19 +202,17 @@ func callbackHandler(c *gin.Context) {
 							log.Println(err.Error())
 						}
 					} else {
-						var tital1, tital2, msg1, msg2, allmsg string
-						for _, v := range sWg {
-							if v.Clock == times && v.Week == date {
-								tital1 = " 時間: " + v.Week + " " + v.Clock + " \n"
-								msg1 += "人員: " + v.Member + " \n"
-							}
-							if v.Clock == times2 && v.Week == date2 {
-								tital2 = " 時間: " + v.Week + " " + v.Clock + " \n"
-								msg2 += "人員: " + v.Member + " \n"
+						var tital, msg, allmsg string
+						for _, v := range sA {
+							for _, v1 := range sWg {
+								if v.date == v1.date && v.times == v1.clock && v.number == v1.number {
+									tital = "活動 ： " + v.name + " 時間: " + v.date + " " + v.times + " \n"
+									msg += "人員: " + v1.member + " \n"
+								}
 							}
 						}
 
-						allmsg = tital1 + msg1 + tital2 + msg2
+						allmsg = tital + msg
 						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(allmsg)).Do(); err != nil {
 							log.Println(err.Error())
 						}
@@ -230,7 +227,7 @@ func callbackHandler(c *gin.Context) {
 						return
 					}
 
-					var template *linebot.CarouselTemplate
+					var cc []*linebot.CarouselColumn
 					picture := "https://upload.cc/i1/2022/06/01/1ryUBP.jpeg"
 					res, err := bot.GetProfile(event.Source.UserID).Do()
 					if err != nil {
@@ -238,17 +235,17 @@ func callbackHandler(c *gin.Context) {
 					}
 
 					for _, v := range sA {
-						template = linebot.NewCarouselTemplate(linebot.NewCarouselColumn(
+						cc = append(cc, linebot.NewCarouselColumn(
 							picture,
 							v.date+" "+v.times,
 							v.name,
-							linebot.NewPostbackAction("參加", date+"&"+times+"&參加&"+res.DisplayName, "", res.DisplayName+"參加"+date+" "+times+" 時段", "", ""),
-							linebot.NewPostbackAction("取消", date+"&"+times+"&取消&"+res.DisplayName, "", res.DisplayName+"取消"+date+" "+times+" 時段", "", ""),
+							linebot.NewPostbackAction("參加", v.date+"&"+v.times+"&參加&"+res.DisplayName, "", res.DisplayName+"參加"+v.date+" "+v.times+" 時段", "", ""),
+							linebot.NewPostbackAction("取消", v.date+"&"+v.times+"&取消&"+res.DisplayName, "", res.DisplayName+"取消"+v.date+" "+v.times+" 時段", "", ""),
+							linebot.NewPostbackAction("刪除活動", strconv.FormatInt(v.number, 16)+"&刪除", "", res.DisplayName+"刪除 活動 ： "+v.name+" 時段 ： "+v.date+" "+v.times, "", ""),
 						))
 					}
 
-					// template := linebot.NewCarouselTemplate(cc[1])
-
+					template := linebot.NewCarouselTemplate(cc...)
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
 					if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
 						log.Println(err.Error())
@@ -259,8 +256,17 @@ func callbackHandler(c *gin.Context) {
 
 		if event.Postback.Data != "" {
 			str := strings.Split(event.Postback.Data, "&")
+			if str[1] == "刪除" {
+				for k, v := range sA {
+					if strconv.FormatInt(v.number, 16) == str[0] {
+						sA = append(sA[:k], sA[k+1:]...)
+						return
+					}
+				}
+			}
+
 			for k, v := range sWg {
-				if v.Member == str[3] && v.Week == str[0] && v.Clock == str[1] {
+				if v.member == str[3] && v.date == str[0] && v.clock == str[1] {
 					if str[2] == "參加" {
 						return
 					} else if str[2] == "取消" {
@@ -269,6 +275,7 @@ func callbackHandler(c *gin.Context) {
 					}
 				}
 			}
+
 			if str[2] == "取消" {
 				return
 			}
