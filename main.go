@@ -144,7 +144,7 @@ func callbackHandler(c *gin.Context) {
 						}
 					}
 
-					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(str[2]+" 活動 ： "+str[3]+" 時段 ： "+str[0]+str[1])).Do(); err != nil {
+					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(res.DisplayName+" "+str[2]+" 活動 ： "+str[3]+" 時段 ： "+str[0]+" "+str[1])).Do(); err != nil {
 						log.Println(err.Error())
 					}
 					return
@@ -156,7 +156,7 @@ func callbackHandler(c *gin.Context) {
 							return
 						} else if str[2] == "取消" {
 							sMg = append(sMg[:k], sMg[k+1:]...)
-							if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(str[2]+" 活動 ： "+str[3]+" 時段 ： "+str[0]+str[1])).Do(); err != nil {
+							if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(res.DisplayName+" "+str[2]+" 活動 ： "+str[3]+" 時段 ： "+str[0]+" "+str[1])).Do(); err != nil {
 								log.Println(err.Error())
 							}
 							return
@@ -164,7 +164,7 @@ func callbackHandler(c *gin.Context) {
 					}
 				}
 
-				if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(str[2]+" 活動 ： "+str[3]+" 時段 ： "+str[0]+str[1])).Do(); err != nil {
+				if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(res.DisplayName+" "+str[2]+" 活動 ： "+str[3]+" 時段 ： "+str[0]+" "+str[1])).Do(); err != nil {
 					log.Println(err.Error())
 				}
 
