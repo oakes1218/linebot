@@ -237,9 +237,9 @@ func callbackHandler(c *gin.Context) {
 						var tital, msg, allmsg string
 						for _, v := range sA {
 							tital += "活動名稱 ： " + v.Name + " 時間: " + v.Date + " " + v.Times + " \n"
-							for _, v1 := range sMg {
+							for k, v1 := range sMg {
 								if v.Date == v1.Date && v.Times == v1.Clock && strconv.FormatInt(v.Number, 10) == v1.Number {
-									msg += "人員: " + v1.Member + " \n"
+									msg += strconv.Itoa(k+1) + v1.Member + " \n"
 								}
 							}
 							allmsg += tital
