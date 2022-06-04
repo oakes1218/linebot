@@ -281,8 +281,8 @@ func callbackHandler(c *gin.Context) {
 							picture,
 							v.Date+" "+v.Times,
 							v.Name,
-							linebot.NewPostbackAction("參加", v.Date+"&"+v.Times+"&參加&"+res.DisplayName+"&"+strconv.FormatInt(v.Number, 10), "", res.DisplayName+" 參加： "+v.Name+" \n時段："+v.Date+" "+v.Times, "", ""),
-							linebot.NewPostbackAction("取消", v.Date+"&"+v.Times+"&取消&"+res.DisplayName+"&"+strconv.FormatInt(v.Number, 10), "", res.DisplayName+" 取消： "+v.Name+" \n時段："+v.Date+" "+v.Times, "", ""),
+							linebot.NewPostbackAction("參加", v.Date+"&"+v.Times+"&參加&"+res.DisplayName+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
+							linebot.NewPostbackAction("取消", v.Date+"&"+v.Times+"&取消&"+res.DisplayName+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
 							linebot.NewPostbackAction("刪除活動", strconv.FormatInt(v.Number, 10)+"&刪除", "", res.DisplayName+"刪除 活動 ： "+v.Name+" 時段 ： "+v.Date+" "+v.Times, "", ""),
 						))
 					}
