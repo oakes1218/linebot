@@ -57,7 +57,7 @@ func SetWeekGroup(mem, wk, ck string) (wg WeekGroup) {
 
 func main() {
 	loc, _ = time.LoadLocation("Asia/Taipei")
-	ticker := time.NewTicker(3 * time.Second)
+	ticker := time.NewTicker(28 * 60 * time.Second)
 	defer ticker.Stop()
 	client := &http.Client{}
 	go runtime(ticker, client)
