@@ -118,6 +118,11 @@ func callbackHandler(c *gin.Context) {
 	}
 
 	for _, event := range events {
+		//重啟警示
+		defer func() {
+			reply(event, linebot.NewTextMessage("bot重啟..."))
+		}()
+
 		switch event.Type {
 		case linebot.EventTypePostback:
 			//判斷群組或個人取使用者名稱
