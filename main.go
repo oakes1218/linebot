@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -17,23 +16,17 @@ import (
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 )
 
-const (
-	MON = "Monday"
-	TUE = "Tuseday"
-	WED = "wednesday"
-	THU = "Thursday"
-	FRI = "Firday"
-	SAT = "Saturday"
-	SUN = "Sunday"
-)
-
 var (
 	bot    *linebot.Client
 	botErr error
-	sMg    = make([]MemGroup, 0)
-	sA     = make([]Activity, 0)
 	loc    *time.Location
 	client = &http.Client{}
+)
+
+// 資料存放記憶體
+var (
+	sMg = make([]MemGroup, 0)
+	sA  = make([]Activity, 0)
 )
 
 type MemGroup struct {
@@ -59,14 +52,21 @@ func SetWeekGroup(mem, dt, ck, id string) (mg MemGroup) {
 	return mg
 }
 
+// bot.ReplyMessage抽成func
+func reply(event *linebot.Event, sentMsg ...linebot.SendingMessage) {
+	if _, err := bot.ReplyMessage(event.ReplyToken, sentMsg...).Do(); err != nil {
+		log.Println(err.Error())
+	}
+}
+
 func main() {
+	//設定時區 timer定時喚醒heroku
 	loc, _ = time.LoadLocation("Asia/Taipei")
 	ticker := time.NewTicker(28 * 60 * time.Second)
 	defer ticker.Stop()
 	go runtime(ticker, client)
 
 	bot, botErr = linebot.New(os.Getenv("CHANNEL_SECRET"), os.Getenv("CHANNEL_ACCESS_TOKEN"))
-
 	if botErr != nil {
 		log.Println(botErr.Error())
 		return
@@ -82,23 +82,23 @@ func main() {
 	r.Run()
 }
 
+// 防止heroku休眠
 func runtime(ticker *time.Ticker, client *http.Client) {
 	for range ticker.C {
 		resp, err := client.Get("https://linesebot.herokuapp.com/ping")
 		if err != nil {
-			fmt.Println(err.Error())
+			log.Println(err.Error())
 		}
 
 		if resp.StatusCode == 200 {
-			fmt.Println("喚醒heroku")
+			log.Println("喚醒heroku")
 		} else {
-			fmt.Println(resp.Status)
 			sitemap, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				log.Fatal(err)
 				return
 			}
-			fmt.Println(string(sitemap))
+			log.Println(string(sitemap))
 		}
 	}
 }
@@ -120,6 +120,7 @@ func callbackHandler(c *gin.Context) {
 	for _, event := range events {
 		switch event.Type {
 		case linebot.EventTypePostback:
+			//判斷群組或個人取使用者名稱
 			var userName string
 			if event.Source.GroupID == "" {
 				res, err := bot.GetProfile(event.Source.UserID).Do()
@@ -150,9 +151,10 @@ func callbackHandler(c *gin.Context) {
 						}
 					}
 
-					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1])).Do(); err != nil {
-						log.Println(err.Error())
-					}
+					// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1])).Do(); err != nil {
+					// 	log.Println(err.Error())
+					// }
+					reply(event, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1]))
 					return
 				}
 
@@ -162,18 +164,19 @@ func callbackHandler(c *gin.Context) {
 							return
 						} else if str[2] == "取消" {
 							sMg = append(sMg[:k], sMg[k+1:]...)
-							if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1])).Do(); err != nil {
-								log.Println(err.Error())
-							}
+							// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1])).Do(); err != nil {
+							// 	log.Println(err.Error())
+							// }
+							reply(event, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1]))
 							return
 						}
 					}
 				}
 
-				if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1])).Do(); err != nil {
-					log.Println(err.Error())
-				}
-
+				// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1])).Do(); err != nil {
+				// 	log.Println(err.Error())
+				// }
+				reply(event, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1]))
 				if str[2] == "取消" {
 					return
 				}
@@ -189,29 +192,89 @@ func callbackHandler(c *gin.Context) {
 					rightBtn := linebot.NewMessageAction("參加人員", "參加人員")
 					template := linebot.NewConfirmTemplate("新增活動指令： \n格式 ： date&time&activity \nex. 2022-01-01&00:00&散步步", leftBtn, rightBtn)
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
-
-					if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
-						log.Println(err.Error())
-					}
+					// if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
+					// 	log.Println(err.Error())
+					// }
+					reply(event, msg)
 				}
 
 				if message.Text == "LoG" {
 					s, err := json.Marshal(sMg)
 					if err != nil {
-						fmt.Printf("Error: %s", err)
+						log.Printf("Error: %s", err)
 						return
 					}
-					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(string(s))).Do(); err != nil {
-						log.Println(err.Error())
-					}
+					// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(string(s))).Do(); err != nil {
+					// 	log.Println(err.Error())
+					// }
+					reply(event, linebot.NewTextMessage(string(s)))
 				}
 
 				if message.Text == "clearAll" {
 					sMg = sMg[:0]
 					sA = sA[:0]
-					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("Success clearAll")).Do(); err != nil {
-						log.Println(err.Error())
+					// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("Success clearAll")).Do(); err != nil {
+					// 	log.Println(err.Error())
+					// }
+					reply(event, linebot.NewTextMessage("Success clearAll"))
+				}
+
+				if message.Text == "參加人員" {
+					if len(sMg) == 0 {
+						// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("無參加人員")).Do(); err != nil {
+						// 	log.Println(err.Error())
+						// }
+						reply(event, linebot.NewTextMessage("無參加人員"))
+					} else {
+						var tital, msg, allmsg string
+						for _, v := range sA {
+							tital += "活動名稱 : " + v.Name + " 時間 : " + v.Date + " " + v.Times + " \n"
+							for _, v1 := range sMg {
+								if v.Date == v1.Date && v.Times == v1.Clock && strconv.FormatInt(v.Number, 10) == v1.Number {
+									msg += "人員 : " + v1.Member + " \n"
+								}
+							}
+							allmsg += tital
+							allmsg += "======================\n"
+							allmsg += msg
+							allmsg += "\n"
+							tital = ""
+							msg = ""
+						}
+						// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(allmsg)).Do(); err != nil {
+						// 	log.Println(err.Error())
+						// }
+						reply(event, linebot.NewTextMessage(allmsg))
 					}
+				}
+
+				if message.Text == "查看活動" {
+					if len(sA) == 0 {
+						// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("無活動列表")).Do(); err != nil {
+						// 	log.Println(err.Error())
+						// }
+						reply(event, linebot.NewTextMessage("無活動列表"))
+						return
+					}
+
+					var cc []*linebot.CarouselColumn
+					picture := "https://upload.cc/i1/2022/06/01/1ryUBP.jpeg"
+					for _, v := range sA {
+						cc = append(cc, linebot.NewCarouselColumn(
+							picture,
+							v.Date+" "+v.Times,
+							v.Name,
+							linebot.NewPostbackAction("參加", v.Date+"&"+v.Times+"&參加&"+v.Name+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
+							linebot.NewPostbackAction("取消", v.Date+"&"+v.Times+"&取消&"+v.Name+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
+						))
+					}
+
+					template := linebot.NewCarouselTemplate(cc...)
+					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
+					// if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
+					// 	log.Println(err.Error())
+					// }
+					reply(event, msg)
 				}
 
 				if message.Text != "" {
@@ -243,66 +306,10 @@ func callbackHandler(c *gin.Context) {
 							ac.Times = sa[1]
 							sA = append(sA, ac)
 						}
-
-						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg)).Do(); err != nil {
-							log.Println(err.Error())
-						}
-					}
-				}
-
-				if message.Text == "參加人員" {
-					if len(sMg) == 0 {
-						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("無參加人員")).Do(); err != nil {
-							log.Println(err.Error())
-						}
-					} else {
-						var tital, msg, allmsg string
-						for _, v := range sA {
-							tital += "活動名稱 ： " + v.Name + " 時間: " + v.Date + " " + v.Times + " \n"
-							for _, v1 := range sMg {
-								if v.Date == v1.Date && v.Times == v1.Clock && strconv.FormatInt(v.Number, 10) == v1.Number {
-									msg += "人員：" + v1.Member + " \n"
-								}
-							}
-							allmsg += tital
-							allmsg += "======================\n"
-							allmsg += msg
-							allmsg += "\n"
-							tital = ""
-							msg = ""
-						}
-
-						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(allmsg)).Do(); err != nil {
-							log.Println(err.Error())
-						}
-					}
-				}
-
-				if message.Text == "查看活動" {
-					if len(sA) == 0 {
-						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("無活動列表")).Do(); err != nil {
-							log.Println(err.Error())
-						}
-						return
-					}
-
-					var cc []*linebot.CarouselColumn
-					picture := "https://upload.cc/i1/2022/06/01/1ryUBP.jpeg"
-					for _, v := range sA {
-						cc = append(cc, linebot.NewCarouselColumn(
-							picture,
-							v.Date+" "+v.Times,
-							v.Name,
-							linebot.NewPostbackAction("參加", v.Date+"&"+v.Times+"&參加&"+v.Name+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
-							linebot.NewPostbackAction("取消", v.Date+"&"+v.Times+"&取消&"+v.Name+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
-						))
-					}
-
-					template := linebot.NewCarouselTemplate(cc...)
-
-					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
-					if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
-						log.Println(err.Error())
+						// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg)).Do(); err != nil {
+						// 	log.Println(err.Error())
+						// }
+						reply(event, linebot.NewTextMessage(msg))
 					}
 				}
 			}
