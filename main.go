@@ -37,17 +37,17 @@ var (
 )
 
 type MemGroup struct {
-	Member string `json: "member"`
-	Date   string `json: "date"`
-	Clock  string `json: "clock"`
-	Number string `json "number"`
+	Member string
+	Date   string
+	Clock  string
+	Number string
 }
 
 type Activity struct {
-	Number int64  `json: "nember"`
-	Name   string `json: "name"`
-	Date   string `json: "date"`
-	Times  string `json: "date"`
+	Number int64
+	Name   string
+	Date   string
+	Times  string
 }
 
 func SetWeekGroup(mem, dt, ck, id string) (mg MemGroup) {
@@ -83,26 +83,22 @@ func main() {
 }
 
 func runtime(ticker *time.Ticker, client *http.Client) {
-	for {
-		select {
-		case <-ticker.C:
-			resp, err := client.Get("https://linesebot.herokuapp.com/ping")
-			defer resp.Body.Close()
-			if err != nil {
-				fmt.Println(err.Error())
-			}
+	for range ticker.C {
+		resp, err := client.Get("https://linesebot.herokuapp.com/ping")
+		if err != nil {
+			fmt.Println(err.Error())
+		}
 
-			if resp.StatusCode == 200 {
-				fmt.Println("喚醒heroku")
-			} else {
-				fmt.Println(resp.Status)
-				sitemap, err := ioutil.ReadAll(resp.Body)
-				if err != nil {
-					log.Fatal(err)
-					return
-				}
-				fmt.Println(string(sitemap))
+		if resp.StatusCode == 200 {
+			fmt.Println("喚醒heroku")
+		} else {
+			fmt.Println(resp.Status)
+			sitemap, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Fatal(err)
+				return
 			}
+			fmt.Println(string(sitemap))
 		}
 	}
 }
@@ -124,9 +120,19 @@ func callbackHandler(c *gin.Context) {
 	for _, event := range events {
 		switch event.Type {
 		case linebot.EventTypePostback:
-			res, err := bot.GetGroupMemberProfile(event.Source.GroupID, event.Source.UserID).Do()
-			if err != nil {
-				log.Println(err.Error())
+			var userName string
+			if event.Source.GroupID == "" {
+				res, err := bot.GetProfile(event.Source.UserID).Do()
+				if err != nil {
+					log.Println(err.Error())
+				}
+				userName = res.DisplayName
+			} else {
+				res, err := bot.GetGroupMemberProfile(event.Source.GroupID, event.Source.UserID).Do()
+				if err != nil {
+					log.Println(err.Error())
+				}
+				userName = res.DisplayName
 			}
 
 			if event.Postback.Data != "" {
@@ -144,19 +150,19 @@ func callbackHandler(c *gin.Context) {
 						}
 					}
 
-					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(res.DisplayName+" "+str[2]+" 活動 ： "+str[3]+" 時段 ： "+str[0]+" "+str[1])).Do(); err != nil {
+					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1])).Do(); err != nil {
 						log.Println(err.Error())
 					}
 					return
 				}
 
 				for k, v := range sMg {
-					if v.Member == res.DisplayName && v.Date == str[0] && v.Clock == str[1] && v.Number == str[4] {
+					if v.Member == userName && v.Date == str[0] && v.Clock == str[1] && v.Number == str[4] {
 						if str[2] == "參加" {
 							return
 						} else if str[2] == "取消" {
 							sMg = append(sMg[:k], sMg[k+1:]...)
-							if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(res.DisplayName+" "+str[2]+" 活動 ： "+str[3]+" 時段 ： "+str[0]+" "+str[1])).Do(); err != nil {
+							if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1])).Do(); err != nil {
 								log.Println(err.Error())
 							}
 							return
@@ -164,7 +170,7 @@ func callbackHandler(c *gin.Context) {
 					}
 				}
 
-				if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(res.DisplayName+" "+str[2]+" 活動 ： "+str[3]+" 時段 ： "+str[0]+" "+str[1])).Do(); err != nil {
+				if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1])).Do(); err != nil {
 					log.Println(err.Error())
 				}
 
@@ -172,7 +178,7 @@ func callbackHandler(c *gin.Context) {
 					return
 				}
 
-				wg := SetWeekGroup(res.DisplayName, str[0], str[1], str[4])
+				wg := SetWeekGroup(userName, str[0], str[1], str[4])
 				sMg = append(sMg, wg)
 			}
 		case linebot.EventTypeMessage:
