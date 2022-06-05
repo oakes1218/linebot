@@ -59,6 +59,35 @@ func reply(event *linebot.Event, sentMsg ...linebot.SendingMessage) {
 	}
 }
 
+func schedule(dateTime string, event *linebot.Event, sentMsg ...linebot.SendingMessage) {
+	tt, err := time.ParseInLocation("2006-01-02 15:04:05", dateTime+":00", loc)
+	if err != nil {
+		log.Println(err.Error())
+	}
+	// 設定提醒清除排程
+	go func() {
+	LOOP:
+		for {
+			for k, v := range sA {
+				if tt.Unix()-60*60 == time.Now().Unix() {
+					reply(event, sentMsg...)
+				}
+
+				if tt.Unix() == v.Number {
+					sA = append(sA[:k], sA[k+1:]...)
+				}
+			}
+
+			for k, v := range sMg {
+				if strconv.FormatInt(tt.Unix(), 10) == v.Number {
+					sMg = append(sMg[:k], sMg[k+1:]...)
+					break LOOP
+				}
+			}
+		}
+	}()
+}
+
 func main() {
 	//設定時區 timer定時喚醒heroku
 	loc, _ = time.LoadLocation("Asia/Taipei")
@@ -310,6 +339,7 @@ func callbackHandler(c *gin.Context) {
 							ac.Date = sa[0]
 							ac.Times = sa[1]
 							sA = append(sA, ac)
+							schedule(sa[0]+" "+sa[1], event, linebot.NewTextMessage("溫馨提醒 : "+sa[2]+"活動一小時後開始"))
 						}
 						// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg)).Do(); err != nil {
 						// 	log.Println(err.Error())
