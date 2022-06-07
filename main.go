@@ -66,7 +66,7 @@ func schedule(dateTime string, event *linebot.Event, sentMsg ...linebot.SendingM
 	}
 	// 設定提醒清除排程
 	go func() {
-		stopTime := (time.Now().In(loc).Unix() - (tt.Unix() - 60*60))
+		stopTime := ((tt.Unix() - 60*60) - time.Now().In(loc).Unix())
 		log.Println(time.Now().In(loc).Unix())
 		log.Println(tt.Unix())
 		log.Println("==================")
@@ -246,10 +246,10 @@ func callbackHandler(c *gin.Context) {
 					rightBtn := linebot.NewMessageAction("參加人員", "參加人員")
 					template := linebot.NewConfirmTemplate("新增活動指令： \n格式 ： date&time&activity \nex. 2022-01-01&00:00&散步步", leftBtn, rightBtn)
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
-					// if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
-					// 	log.Println(err.Error())
-					// }
-					reply(event, msg)
+					if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
+						log.Println(err.Error())
+					}
+					// reply(event, msg)
 				}
 
 				if message.Text == "LoG" {
