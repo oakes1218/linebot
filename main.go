@@ -363,7 +363,10 @@ func callbackHandler(c *gin.Context) {
 							// schedule(sa[0]+" "+sa[1], event, linebot.NewTextMessage("溫馨提醒 : "+sa[2]+"活動一小時後開始"))
 						}
 						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg)).Do(); err != nil {
+							log.Println("================")
 							log.Println(err.Error())
+							log.Println(err)
+							log.Println("================")
 						}
 						// reply(event, linebot.NewTextMessage(msg))
 					}
