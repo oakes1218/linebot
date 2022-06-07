@@ -362,10 +362,10 @@ func callbackHandler(c *gin.Context) {
 							sA = append(sA, ac)
 							// schedule(sa[0]+" "+sa[1], event, linebot.NewTextMessage("溫馨提醒 : "+sa[2]+"活動一小時後開始"))
 						}
-						// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg)).Do(); err != nil {
-						// 	log.Println(err.Error())
-						// }
-						reply(event, linebot.NewTextMessage(msg))
+						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg)).Do(); err != nil {
+							log.Println(err.Error())
+						}
+						// reply(event, linebot.NewTextMessage(msg))
 					}
 				}
 			}
