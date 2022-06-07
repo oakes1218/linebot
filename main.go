@@ -66,7 +66,7 @@ func schedule(dateTime string, event *linebot.Event, sentMsg ...linebot.SendingM
 	}
 	// 設定提醒清除排程
 	go func() {
-		stopTime := ((tt.Unix() - 60*60) - time.Now().In(loc).Unix())
+		stopTime := ((tt.Unix() - 60) - time.Now().In(loc).Unix())
 		log.Println(time.Now().In(loc).Unix())
 		log.Println(tt.Unix())
 		log.Println("==================")
@@ -168,9 +168,9 @@ func callbackHandler(c *gin.Context) {
 
 	for _, event := range events {
 		//重啟警示
-		defer func() {
-			reply(event, linebot.NewTextMessage("bot重啟..."))
-		}()
+		// defer func() {
+		// 	reply(event, linebot.NewTextMessage("bot重啟..."))
+		// }()
 
 		switch event.Type {
 		case linebot.EventTypePostback:
