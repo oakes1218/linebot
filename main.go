@@ -148,6 +148,10 @@ func memList() string {
 func actList() *linebot.TemplateMessage {
 	var cc []*linebot.CarouselColumn
 	picture := "https://upload.cc/i1/2022/06/01/1ryUBP.jpeg"
+	if len(sA) == 0 {
+		return nil
+	}
+
 	for _, v := range sA {
 		cc = append(cc, linebot.NewCarouselColumn(
 			picture,
@@ -274,7 +278,12 @@ func callbackHandler(c *gin.Context) {
 						}
 					}
 
-					reply(event, linebot.NewTextMessage(userName+" "+str[1]+" 活動 : "+str[4]+" 時段 : "+str[2]+" "+str[3]), actList())
+					if actList() == nil {
+						reply(event, linebot.NewTextMessage(userName+" "+str[1]+" 活動 : "+str[4]+" 時段 : "+str[2]+" "+str[3]))
+					} else {
+						reply(event, linebot.NewTextMessage(userName+" "+str[1]+" 活動 : "+str[4]+" 時段 : "+str[2]+" "+str[3]), actList())
+					}
+
 					return
 				}
 
