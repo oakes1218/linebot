@@ -79,16 +79,8 @@ func schedule(dateTime string, event *linebot.Event, sentMsg ...linebot.SendingM
 	// 設定提醒清除排程
 	go func() {
 		stopTime := (tt.Unix() - time.Now().In(loc).Unix())
-		log.Println("==================================")
-		log.Println(tt.Unix())
-		log.Println(stopTime)
-		log.Println(stopTime + 60)
-		log.Println("==================================")
 		//過期十分鐘自動刪除
 		time.Sleep((time.Duration(stopTime) + 60) * time.Second)
-		log.Println("----------------------------------")
-		log.Println(tt.Unix())
-		log.Println("----------------------------------")
 		for k, v := range sA {
 			if tt.Unix() == v.Number {
 				sA = append(sA[:k], sA[k+1:]...)
