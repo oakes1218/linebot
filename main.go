@@ -66,25 +66,40 @@ func schedule(dateTime string, event *linebot.Event, sentMsg ...linebot.SendingM
 	}
 	// 設定提醒清除排程
 	go func() {
-	LOOP:
-		for {
-			for k, v := range sA {
-				if tt.Unix()-60*60 == time.Now().Unix() {
-					reply(event, sentMsg...)
-				}
-
-				if tt.Unix() == v.Number {
-					sA = append(sA[:k], sA[k+1:]...)
-				}
-			}
-
-			for k, v := range sMg {
-				if strconv.FormatInt(tt.Unix(), 10) == v.Number {
-					sMg = append(sMg[:k], sMg[k+1:]...)
-					break LOOP
-				}
+		stopTime := (time.Now().Unix() - (tt.Unix() - 60*60))
+		time.Sleep(time.Duration(stopTime) * time.Second)
+		reply(event, sentMsg...)
+		time.Sleep(60 * 60)
+		for k, v := range sA {
+			if tt.Unix() == v.Number {
+				sA = append(sA[:k], sA[k+1:]...)
 			}
 		}
+
+		for k, v := range sMg {
+			if strconv.FormatInt(tt.Unix(), 10) == v.Number {
+				sMg = append(sMg[:k], sMg[k+1:]...)
+			}
+		}
+		// LOOP:
+		// 	for {
+		// 		for k, v := range sA {
+		// 			if tt.Unix()-60*60 == time.Now().Unix() {
+		// 				reply(event, sentMsg...)
+		// 			}
+
+		// 			if tt.Unix() == v.Number {
+		// 				sA = append(sA[:k], sA[k+1:]...)
+		// 			}
+		// 		}
+
+		// 		for k, v := range sMg {
+		// 			if strconv.FormatInt(tt.Unix(), 10) == v.Number {
+		// 				sMg = append(sMg[:k], sMg[k+1:]...)
+		// 				break LOOP
+		// 			}
+		// 		}
+		// 	}
 	}()
 }
 
