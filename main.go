@@ -168,9 +168,9 @@ func callbackHandler(c *gin.Context) {
 
 	for _, event := range events {
 		//重啟警示
-		// defer func() {
-		// 	reply(event, linebot.NewTextMessage("bot重啟..."))
-		// }()
+		defer func() {
+			reply(event, linebot.NewTextMessage("bot重啟..."))
+		}()
 
 		switch event.Type {
 		case linebot.EventTypePostback:
@@ -360,15 +360,13 @@ func callbackHandler(c *gin.Context) {
 							ac.Date = sa[0]
 							ac.Times = sa[1]
 							sA = append(sA, ac)
-							// schedule(sa[0]+" "+sa[1], event, linebot.NewTextMessage("溫馨提醒 : "+sa[2]+"活動一小時後開始"))
+							msg += "新增活動成功"
+							schedule(sa[0]+" "+sa[1], event, linebot.NewTextMessage("溫馨提醒 : "+sa[2]+"活動一小時後開始"))
 						}
-						if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg)).Do(); err != nil {
-							log.Println("================")
-							log.Println(err.Error())
-							log.Println(err)
-							log.Println("================")
-						}
-						// reply(event, linebot.NewTextMessage(msg))
+						// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg)).Do(); err != nil {
+						// 	log.Println(err.Error())
+						// }
+						reply(event, linebot.NewTextMessage(msg))
 					}
 				}
 			}
