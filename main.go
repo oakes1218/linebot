@@ -380,7 +380,12 @@ func callbackHandler(c *gin.Context) {
 
 						if msg == "" {
 							var ac Activity
-							ac.Number = time.Now().In(loc).Unix()
+							tt, err := time.ParseInLocation("2006-01-02 15:04:05", sa[0]+" "+sa[1]+":00", loc)
+							if err != nil {
+								sendMsg("ParseInLocation err : " + err.Error())
+							}
+
+							ac.Number = tt.Unix()
 							ac.Name = sa[2]
 							ac.Date = sa[0]
 							ac.Times = sa[1]
