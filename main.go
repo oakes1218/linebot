@@ -246,10 +246,10 @@ func callbackHandler(c *gin.Context) {
 					rightBtn := linebot.NewMessageAction("參加人員", "參加人員")
 					template := linebot.NewConfirmTemplate("新增活動指令： \n格式 ： date&time&activity \nex. 2022-01-01&00:00&散步步", leftBtn, rightBtn)
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
-					if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
-						log.Println(err.Error())
-					}
-					// reply(event, msg)
+					// if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
+					// 	log.Println(err.Error())
+					// }
+					reply(event, msg)
 				}
 
 				if message.Text == "LoG" {
@@ -360,7 +360,7 @@ func callbackHandler(c *gin.Context) {
 							ac.Date = sa[0]
 							ac.Times = sa[1]
 							sA = append(sA, ac)
-							schedule(sa[0]+" "+sa[1], event, linebot.NewTextMessage("溫馨提醒 : "+sa[2]+"活動一小時後開始"))
+							// schedule(sa[0]+" "+sa[1], event, linebot.NewTextMessage("溫馨提醒 : "+sa[2]+"活動一小時後開始"))
 						}
 						// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg)).Do(); err != nil {
 						// 	log.Println(err.Error())
