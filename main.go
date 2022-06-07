@@ -64,6 +64,7 @@ func SetWeekGroup(mem, dt, ck, id string) (mg MemGroup) {
 func reply(event *linebot.Event, sentMsg ...linebot.SendingMessage) {
 	if _, err := bot.ReplyMessage(event.ReplyToken, sentMsg...).Do(); err != nil {
 		log.Println(err.Error())
+		sendMsg("reply error : " + err.Error())
 	}
 }
 
@@ -71,6 +72,7 @@ func schedule(dateTime string, event *linebot.Event, sentMsg ...linebot.SendingM
 	tt, err := time.ParseInLocation("2006-01-02 15:04:05", dateTime+":00", loc)
 	if err != nil {
 		log.Println(err.Error())
+		sendMsg("schedule error : " + err.Error())
 	}
 	// 設定提醒清除排程
 	go func() {
@@ -221,9 +223,6 @@ func callbackHandler(c *gin.Context) {
 						}
 					}
 
-					// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1])).Do(); err != nil {
-					// 	log.Println(err.Error())
-					// }
 					reply(event, linebot.NewTextMessage(userName+" "+str[1]+" 活動 : "+str[4]+" 時段 : "+str[2]+" "+str[3]))
 					return
 				}
@@ -234,9 +233,6 @@ func callbackHandler(c *gin.Context) {
 							return
 						} else if str[2] == "取消" {
 							sMg = append(sMg[:k], sMg[k+1:]...)
-							// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1])).Do(); err != nil {
-							// 	log.Println(err.Error())
-							// }
 							reply(event, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1]))
 							return
 						}
@@ -266,6 +262,7 @@ func callbackHandler(c *gin.Context) {
 					s, err := json.Marshal(sMg)
 					if err != nil {
 						log.Printf("Error: %s", err)
+						sendMsg("json.Marshal err : " + err.Error())
 						return
 					}
 					reply(event, linebot.NewTextMessage(string(s)))
@@ -361,6 +358,7 @@ func callbackHandler(c *gin.Context) {
 			}
 		default:
 			log.Printf("Unknown event: %v", event)
+			sendMsg("Unknown event")
 		}
 	}
 }
