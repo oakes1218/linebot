@@ -67,6 +67,9 @@ func schedule(dateTime string, event *linebot.Event, sentMsg ...linebot.SendingM
 	// 設定提醒清除排程
 	go func() {
 		stopTime := (time.Now().Unix() - (tt.Unix() - 60*60))
+		log.Println("==================")
+		log.Println(stopTime)
+		log.Println("==================")
 		time.Sleep(time.Duration(stopTime) * time.Second)
 		reply(event, sentMsg...)
 		time.Sleep(60 * 60)
@@ -315,6 +318,7 @@ func callbackHandler(c *gin.Context) {
 							v.Name,
 							linebot.NewPostbackAction("參加", v.Date+"&"+v.Times+"&參加&"+v.Name+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
 							linebot.NewPostbackAction("取消", v.Date+"&"+v.Times+"&取消&"+v.Name+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
+							linebot.NewPostbackAction("刪除活動", v.Date+"&"+v.Times+"&刪除&"+v.Name+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
 						))
 					}
 
