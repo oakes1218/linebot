@@ -66,15 +66,9 @@ func schedule(dateTime string, event *linebot.Event, sentMsg ...linebot.SendingM
 	}
 	// 設定提醒清除排程
 	go func() {
-		stopTime := ((tt.Unix() - 60) - time.Now().In(loc).Unix())
-		log.Println(time.Now().In(loc).Unix())
-		log.Println(tt.Unix())
-		log.Println("==================")
-		log.Println(stopTime)
-		log.Println("==================")
-		time.Sleep(time.Duration(stopTime) * time.Second)
-		reply(event, sentMsg...)
-		time.Sleep(60 * 60)
+		stopTime := (tt.Unix() - time.Now().In(loc).Unix())
+		//過期十分鐘自動刪除
+		time.Sleep(time.Duration(stopTime) + (60*10)*time.Second)
 		for k, v := range sA {
 			if tt.Unix() == v.Number {
 				sA = append(sA[:k], sA[k+1:]...)
@@ -111,7 +105,7 @@ func schedule(dateTime string, event *linebot.Event, sentMsg ...linebot.SendingM
 func main() {
 	//設定時區 timer定時喚醒heroku
 	loc, _ = time.LoadLocation("Asia/Taipei")
-	ticker := time.NewTicker(28 * 60 * time.Second)
+	ticker := time.NewTicker(9 * 60 * time.Second)
 	defer ticker.Stop()
 	go runtime(ticker, client)
 
@@ -167,11 +161,6 @@ func callbackHandler(c *gin.Context) {
 	}
 
 	for _, event := range events {
-		//重啟警示
-		// defer func() {
-		// 	reply(event, linebot.NewTextMessage("bot重啟..."))
-		// }()
-
 		switch event.Type {
 		case linebot.EventTypePostback:
 			//判斷群組或個人取使用者名稱
@@ -227,9 +216,6 @@ func callbackHandler(c *gin.Context) {
 					}
 				}
 
-				// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1])).Do(); err != nil {
-				// 	log.Println(err.Error())
-				// }
 				reply(event, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1]))
 				if str[2] == "取消" {
 					return
@@ -246,9 +232,6 @@ func callbackHandler(c *gin.Context) {
 					rightBtn := linebot.NewMessageAction("參加人員", "參加人員")
 					template := linebot.NewConfirmTemplate("新增活動指令： \n格式 ： date&time&activity \nex. 2022-01-01&00:00&散步步", leftBtn, rightBtn)
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
-					// if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
-					// 	log.Println(err.Error())
-					// }
 					reply(event, msg)
 				}
 
@@ -258,26 +241,17 @@ func callbackHandler(c *gin.Context) {
 						log.Printf("Error: %s", err)
 						return
 					}
-					// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(string(s))).Do(); err != nil {
-					// 	log.Println(err.Error())
-					// }
 					reply(event, linebot.NewTextMessage(string(s)))
 				}
 
 				if message.Text == "clearAll" {
 					sMg = sMg[:0]
 					sA = sA[:0]
-					// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("Success clearAll")).Do(); err != nil {
-					// 	log.Println(err.Error())
-					// }
 					reply(event, linebot.NewTextMessage("Success clearAll"))
 				}
 
 				if message.Text == "參加人員" {
 					if len(sMg) == 0 {
-						// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("無參加人員")).Do(); err != nil {
-						// 	log.Println(err.Error())
-						// }
 						reply(event, linebot.NewTextMessage("無參加人員"))
 					} else {
 						var tital, msg, allmsg string
@@ -295,18 +269,12 @@ func callbackHandler(c *gin.Context) {
 							tital = ""
 							msg = ""
 						}
-						// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(allmsg)).Do(); err != nil {
-						// 	log.Println(err.Error())
-						// }
 						reply(event, linebot.NewTextMessage(allmsg))
 					}
 				}
 
 				if message.Text == "查看活動" {
 					if len(sA) == 0 {
-						// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("無活動列表")).Do(); err != nil {
-						// 	log.Println(err.Error())
-						// }
 						reply(event, linebot.NewTextMessage("無活動列表"))
 						return
 					}
@@ -326,9 +294,6 @@ func callbackHandler(c *gin.Context) {
 
 					template := linebot.NewCarouselTemplate(cc...)
 					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
-					// if _, err = bot.ReplyMessage(event.ReplyToken, msg).Do(); err != nil {
-					// 	log.Println(err.Error())
-					// }
 					reply(event, msg)
 				}
 
@@ -363,9 +328,6 @@ func callbackHandler(c *gin.Context) {
 							msg += "新增活動成功"
 							schedule(sa[0]+" "+sa[1], event, linebot.NewTextMessage("溫馨提醒 : "+sa[2]+"活動一小時後開始"))
 						}
-						// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg)).Do(); err != nil {
-						// 	log.Println(err.Error())
-						// }
 						reply(event, linebot.NewTextMessage(msg))
 					}
 				}
