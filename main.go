@@ -79,6 +79,9 @@ func schedule(dateTime string, event *linebot.Event, sentMsg ...linebot.SendingM
 		stopTime := (tt.Unix() - time.Now().In(loc).Unix())
 		//過期十分鐘自動刪除
 		time.Sleep(time.Duration(stopTime) + (60*10)*time.Second)
+		log.Println(stopTime)
+		log.Println(time.Duration(stopTime) + (60 * 10))
+		log.Println(tt.Unix())
 		for k, v := range sA {
 			if tt.Unix() == v.Number {
 				sA = append(sA[:k], sA[k+1:]...)
@@ -90,7 +93,7 @@ func schedule(dateTime string, event *linebot.Event, sentMsg ...linebot.SendingM
 				sMg = append(sMg[:k], sMg[k+1:]...)
 			}
 		}
-		log.Println("刪除逾時活動")
+		sendMsg("刪除逾時活動")
 		// LOOP:
 		// 	for {
 		// 		for k, v := range sA {
@@ -122,6 +125,26 @@ func sendMsg(msg string) {
 	}
 }
 
+func memList() string {
+	var tital, msg, allmsg string
+	for _, v := range sA {
+		tital += "活動名稱 : " + v.Name + " 時間 : " + v.Date + " " + v.Times + " \n"
+		for _, v1 := range sMg {
+			if v.Date == v1.Date && v.Times == v1.Clock && strconv.FormatInt(v.Number, 10) == v1.Number {
+				msg += "人員 : " + v1.Member + " \n"
+			}
+		}
+		allmsg += tital
+		allmsg += "======================\n"
+		allmsg += msg
+		allmsg += "\n"
+		tital = ""
+		msg = ""
+	}
+
+	return allmsg
+}
+
 func main() {
 	//server重啟發tg
 	tgbot, tbotErr = tgbotapi.NewBotAPI(tgToken)
@@ -130,8 +153,8 @@ func main() {
 	}
 
 	tgbot.Debug = true
-
 	defer sendMsg("line bot重啟...")
+
 	//設定時區 timer定時喚醒heroku
 	loc, _ = time.LoadLocation("Asia/Taipei")
 	ticker := time.NewTicker(9 * 60 * time.Second)
@@ -233,19 +256,19 @@ func callbackHandler(c *gin.Context) {
 							return
 						} else if str[2] == "取消" {
 							sMg = append(sMg[:k], sMg[k+1:]...)
-							reply(event, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1]))
+							reply(event, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1]), linebot.NewTextMessage(memList()))
 							return
 						}
 					}
 				}
 
-				reply(event, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1]))
 				if str[2] == "取消" {
 					return
 				}
 
 				wg := SetWeekGroup(userName, str[0], str[1], str[4])
 				sMg = append(sMg, wg)
+				reply(event, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1]), linebot.NewTextMessage(memList()))
 			}
 		case linebot.EventTypeMessage:
 			switch message := event.Message.(type) {
@@ -265,7 +288,15 @@ func callbackHandler(c *gin.Context) {
 						sendMsg("json.Marshal err : " + err.Error())
 						return
 					}
-					reply(event, linebot.NewTextMessage(string(s)))
+
+					sa, err := json.Marshal(sA)
+					if err != nil {
+						log.Printf("Error: %s", err)
+						sendMsg("json.Marshal err : " + err.Error())
+						return
+					}
+
+					reply(event, linebot.NewTextMessage(string(s)), linebot.NewTextMessage(string(sa)))
 				}
 
 				if message.Text == "clearAll" {
@@ -278,22 +309,7 @@ func callbackHandler(c *gin.Context) {
 					if len(sMg) == 0 {
 						reply(event, linebot.NewTextMessage("無參加人員"))
 					} else {
-						var tital, msg, allmsg string
-						for _, v := range sA {
-							tital += "活動名稱 : " + v.Name + " 時間 : " + v.Date + " " + v.Times + " \n"
-							for _, v1 := range sMg {
-								if v.Date == v1.Date && v.Times == v1.Clock && strconv.FormatInt(v.Number, 10) == v1.Number {
-									msg += "人員 : " + v1.Member + " \n"
-								}
-							}
-							allmsg += tital
-							allmsg += "======================\n"
-							allmsg += msg
-							allmsg += "\n"
-							tital = ""
-							msg = ""
-						}
-						reply(event, linebot.NewTextMessage(allmsg))
+						reply(event, linebot.NewTextMessage(memList()))
 					}
 				}
 
