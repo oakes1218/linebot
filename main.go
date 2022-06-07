@@ -77,11 +77,10 @@ func schedule(dateTime string, event *linebot.Event, sentMsg ...linebot.SendingM
 	// 設定提醒清除排程
 	go func() {
 		stopTime := (tt.Unix() - time.Now().In(loc).Unix())
-		//過期十分鐘自動刪除
-		time.Sleep(time.Duration(stopTime) + (60*10)*time.Second)
 		log.Println(stopTime)
-		log.Println(time.Duration(stopTime) + (60 * 10))
-		log.Println(tt.Unix())
+		log.Println(time.Duration(stopTime) + 60)
+		//過期十分鐘自動刪除
+		time.Sleep((time.Duration(stopTime) + 60) * time.Second)
 		for k, v := range sA {
 			if tt.Unix() == v.Number {
 				sA = append(sA[:k], sA[k+1:]...)
@@ -143,6 +142,26 @@ func memList() string {
 	}
 
 	return allmsg
+}
+
+func actList() *linebot.TemplateMessage {
+	var cc []*linebot.CarouselColumn
+	picture := "https://upload.cc/i1/2022/06/01/1ryUBP.jpeg"
+	for _, v := range sA {
+		cc = append(cc, linebot.NewCarouselColumn(
+			picture,
+			v.Date+" "+v.Times,
+			v.Name,
+			linebot.NewPostbackAction("參加", v.Date+"&"+v.Times+"&參加&"+v.Name+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
+			linebot.NewPostbackAction("取消", v.Date+"&"+v.Times+"&取消&"+v.Name+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
+			linebot.NewPostbackAction("刪除活動", strconv.FormatInt(v.Number, 10)+"&刪除&"+v.Date+"&"+v.Times+"&"+v.Name, "", "", "", ""),
+		))
+	}
+
+	template := linebot.NewCarouselTemplate(cc...)
+	msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
+
+	return msg
 }
 
 func main() {
@@ -246,7 +265,7 @@ func callbackHandler(c *gin.Context) {
 						}
 					}
 
-					reply(event, linebot.NewTextMessage(userName+" "+str[1]+" 活動 : "+str[4]+" 時段 : "+str[2]+" "+str[3]))
+					reply(event, linebot.NewTextMessage(userName+" "+str[1]+" 活動 : "+str[4]+" 時段 : "+str[2]+" "+str[3]), actList())
 					return
 				}
 
@@ -318,23 +337,7 @@ func callbackHandler(c *gin.Context) {
 						reply(event, linebot.NewTextMessage("無活動列表"))
 						return
 					}
-
-					var cc []*linebot.CarouselColumn
-					picture := "https://upload.cc/i1/2022/06/01/1ryUBP.jpeg"
-					for _, v := range sA {
-						cc = append(cc, linebot.NewCarouselColumn(
-							picture,
-							v.Date+" "+v.Times,
-							v.Name,
-							linebot.NewPostbackAction("參加", v.Date+"&"+v.Times+"&參加&"+v.Name+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
-							linebot.NewPostbackAction("取消", v.Date+"&"+v.Times+"&取消&"+v.Name+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
-							linebot.NewPostbackAction("刪除活動", strconv.FormatInt(v.Number, 10)+"&刪除&"+v.Date+"&"+v.Times+"&"+v.Name, "", "", "", ""),
-						))
-					}
-
-					template := linebot.NewCarouselTemplate(cc...)
-					msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
-					reply(event, msg)
+					reply(event, actList())
 				}
 
 				if message.Text != "" {
@@ -368,7 +371,7 @@ func callbackHandler(c *gin.Context) {
 							msg += "新增活動成功"
 							schedule(sa[0]+" "+sa[1], event, linebot.NewTextMessage("溫馨提醒 : "+sa[2]+"活動一小時後開始"))
 						}
-						reply(event, linebot.NewTextMessage(msg))
+						reply(event, linebot.NewTextMessage(msg), actList())
 					}
 				}
 			}
