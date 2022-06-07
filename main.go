@@ -6,9 +6,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"regexp"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -77,10 +79,16 @@ func schedule(dateTime string, event *linebot.Event, sentMsg ...linebot.SendingM
 	// 設定提醒清除排程
 	go func() {
 		stopTime := (tt.Unix() - time.Now().In(loc).Unix())
+		log.Println("==================================")
+		log.Println(tt.Unix())
 		log.Println(stopTime)
-		log.Println(time.Duration(stopTime) + 60)
+		log.Println(stopTime + 60)
+		log.Println("==================================")
 		//過期十分鐘自動刪除
 		time.Sleep((time.Duration(stopTime) + 60) * time.Second)
+		log.Println("----------------------------------")
+		log.Println(tt.Unix())
+		log.Println("----------------------------------")
 		for k, v := range sA {
 			if tt.Unix() == v.Number {
 				sA = append(sA[:k], sA[k+1:]...)
@@ -108,6 +116,7 @@ func schedule(dateTime string, event *linebot.Event, sentMsg ...linebot.SendingM
 		// 		for k, v := range sMg {
 		// 			if strconv.FormatInt(tt.Unix(), 10) == v.Number {
 		// 				sMg = append(sMg[:k], sMg[k+1:]...)
+		// 				sendMsg("刪除逾時活動")
 		// 				break LOOP
 		// 			}
 		// 		}
@@ -172,7 +181,15 @@ func main() {
 	}
 
 	tgbot.Debug = true
-	defer sendMsg("line bot重啟...")
+
+	quit := make(chan os.Signal)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		select {
+		case <-quit:
+			sendMsg("line bot重啟...")
+		}
+	}()
 
 	//設定時區 timer定時喚醒heroku
 	loc, _ = time.LoadLocation("Asia/Taipei")
