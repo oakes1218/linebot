@@ -12,15 +12,23 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 )
 
 var (
-	bot    *linebot.Client
-	botErr error
-	loc    *time.Location
-	client = &http.Client{}
+	bot     *linebot.Client
+	tgbot   *tgbotapi.BotAPI
+	tbotErr error
+	botErr  error
+	loc     *time.Location
+	client  = &http.Client{}
+)
+
+const (
+	chatID  = 193618166
+	tgToken = "1394548836:AAHdBSpf4QnA5Rt7xsLInEFDLMZ6i41Z0fY"
 )
 
 // 資料存放記憶體
@@ -80,6 +88,7 @@ func schedule(dateTime string, event *linebot.Event, sentMsg ...linebot.SendingM
 				sMg = append(sMg[:k], sMg[k+1:]...)
 			}
 		}
+		log.Println("刪除逾時活動")
 		// LOOP:
 		// 	for {
 		// 		for k, v := range sA {
@@ -102,7 +111,25 @@ func schedule(dateTime string, event *linebot.Event, sentMsg ...linebot.SendingM
 	}()
 }
 
+func sendMsg(msg string) {
+	newMsg := tgbotapi.NewMessage(chatID, msg)
+	_, err := tgbot.Send(newMsg)
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+}
+
 func main() {
+	//server重啟發tg
+	tgbot, tbotErr = tgbotapi.NewBotAPI(tgToken)
+	if tbotErr != nil {
+		log.Panic(tbotErr)
+	}
+
+	tgbot.Debug = true
+
+	defer sendMsg("line bot重啟...")
 	//設定時區 timer定時喚醒heroku
 	loc, _ = time.LoadLocation("Asia/Taipei")
 	ticker := time.NewTicker(9 * 60 * time.Second)

@@ -18,6 +18,9 @@ github.com/go-playground/universal-translator
 # github.com/go-playground/validator/v10 v10.4.1
 ## explicit; go 1.13
 github.com/go-playground/validator/v10
+# github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
+## explicit
+github.com/go-telegram-bot-api/telegram-bot-api
 # github.com/golang/protobuf v1.3.3
 ## explicit; go 1.12
 github.com/golang/protobuf/proto
@@ -45,6 +48,9 @@ github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742
 ## explicit
 github.com/modern-go/reflect2
+# github.com/technoweenie/multipartstreamer v1.0.1
+## explicit
+github.com/technoweenie/multipartstreamer
 # github.com/ugorji/go/codec v1.1.7
 ## explicit
 github.com/ugorji/go/codec
