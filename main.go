@@ -66,7 +66,9 @@ func schedule(dateTime string, event *linebot.Event, sentMsg ...linebot.SendingM
 	}
 	// 設定提醒清除排程
 	go func() {
-		stopTime := (time.Now().Unix() - (tt.Unix() - 60*60))
+		stopTime := (time.Now().In(loc).Unix() - (tt.Unix() - 60*60))
+		log.Println(time.Now().In(loc).Unix())
+		log.Println(tt.Unix())
 		log.Println("==================")
 		log.Println(stopTime)
 		log.Println("==================")
@@ -206,7 +208,7 @@ func callbackHandler(c *gin.Context) {
 					// if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1])).Do(); err != nil {
 					// 	log.Println(err.Error())
 					// }
-					reply(event, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1]))
+					reply(event, linebot.NewTextMessage(userName+" "+str[1]+" 活動 : "+str[4]+" 時段 : "+str[2]+" "+str[3]))
 					return
 				}
 
@@ -318,7 +320,7 @@ func callbackHandler(c *gin.Context) {
 							v.Name,
 							linebot.NewPostbackAction("參加", v.Date+"&"+v.Times+"&參加&"+v.Name+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
 							linebot.NewPostbackAction("取消", v.Date+"&"+v.Times+"&取消&"+v.Name+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
-							linebot.NewPostbackAction("刪除活動", v.Date+"&"+v.Times+"&刪除&"+v.Name+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
+							linebot.NewPostbackAction("刪除活動", strconv.FormatInt(v.Number, 10)+"&刪除&"+v.Date+"&"+v.Times+"&"+v.Name, "", "", "", ""),
 						))
 					}
 
