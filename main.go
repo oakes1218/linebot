@@ -369,6 +369,8 @@ func main() {
 		}
 		sMg = m
 		sA = a
+		log.Println(sMg)
+		log.Println(sA)
 	}
 
 	bot, botErr = linebot.New(os.Getenv("CHANNEL_SECRET"), os.Getenv("CHANNEL_ACCESS_TOKEN"))
