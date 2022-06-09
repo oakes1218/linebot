@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -17,6 +19,10 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/option"
+	"google.golang.org/api/sheets/v4"
 )
 
 var (
@@ -26,11 +32,14 @@ var (
 	botErr  error
 	loc     *time.Location
 	client  = &http.Client{}
+	srv     *sheets.Service
 )
 
 const (
-	chatID  = 193618166
-	tgToken = "1394548836:AAHdBSpf4QnA5Rt7xsLInEFDLMZ6i41Z0fY"
+	chatID        = 193618166
+	tgToken       = "1394548836:AAHdBSpf4QnA5Rt7xsLInEFDLMZ6i41Z0fY"
+	spreadsheetId = "1sXc7hN7V7TV7lgF4bw1qz6INMfEb2ThUbPT_O5IeYuo"
+	readRange     = "行程表!A1:A2"
 )
 
 // 資料存放記憶體
@@ -49,7 +58,7 @@ type MemGroup struct {
 type Activity struct {
 	Number int64
 	Name   string
-	Date   string
+	Clock  string
 	Times  string
 }
 
@@ -70,7 +79,7 @@ func reply(event *linebot.Event, sentMsg ...linebot.SendingMessage) {
 	}
 }
 
-func schedule(dateTime string, event *linebot.Event, sentMsg ...linebot.SendingMessage) {
+func schedule(dateTime string, event *linebot.Event) {
 	tt, err := time.ParseInLocation("2006-01-02 15:04:05", dateTime+":00", loc)
 	if err != nil {
 		log.Println(err.Error())
@@ -128,9 +137,9 @@ func sendMsg(msg string) {
 func memList() string {
 	var tital, msg, allmsg string
 	for _, v := range sA {
-		tital += "活動名稱 : " + v.Name + " 時間 : " + v.Date + " " + v.Times + " \n"
+		tital += "活動名稱 : " + v.Name + " 時間 : " + v.Clock + " " + v.Times + " \n"
 		for _, v1 := range sMg {
-			if v.Date == v1.Date && v.Times == v1.Clock && strconv.FormatInt(v.Number, 10) == v1.Number {
+			if v.Clock == v1.Date && v.Times == v1.Clock && strconv.FormatInt(v.Number, 10) == v1.Number {
 				msg += "人員 : " + v1.Member + " \n"
 			}
 		}
@@ -155,11 +164,11 @@ func actList() *linebot.TemplateMessage {
 	for _, v := range sA {
 		cc = append(cc, linebot.NewCarouselColumn(
 			picture,
-			v.Date+" "+v.Times,
+			v.Clock+" "+v.Times,
 			v.Name,
-			linebot.NewPostbackAction("參加", v.Date+"&"+v.Times+"&參加&"+v.Name+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
-			linebot.NewPostbackAction("取消", v.Date+"&"+v.Times+"&取消&"+v.Name+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
-			linebot.NewPostbackAction("刪除活動", strconv.FormatInt(v.Number, 10)+"&刪除&"+v.Date+"&"+v.Times+"&"+v.Name, "", "", "", ""),
+			linebot.NewPostbackAction("參加", v.Clock+"&"+v.Times+"&參加&"+v.Name+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
+			linebot.NewPostbackAction("取消", v.Clock+"&"+v.Times+"&取消&"+v.Name+"&"+strconv.FormatInt(v.Number, 10), "", "", "", ""),
+			linebot.NewPostbackAction("刪除活動", strconv.FormatInt(v.Number, 10)+"&刪除&"+v.Clock+"&"+v.Times+"&"+v.Name, "", "", "", ""),
 		))
 	}
 
@@ -167,6 +176,156 @@ func actList() *linebot.TemplateMessage {
 	msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
 
 	return msg
+}
+
+func getClient(config *oauth2.Config) *http.Client {
+	// The file token.json stores the user's access and refresh tokens, and is
+	// created automatically when the authorization flow completes for the first
+	// time.
+	tokFile := "token.json"
+	tok, err := tokenFromFile(tokFile)
+	if err != nil {
+		tok = getTokenFromWeb(config)
+		saveToken(tokFile, tok)
+	}
+	return config.Client(context.Background(), tok)
+}
+
+func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
+	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+	fmt.Printf("Go to the following link in your browser then type the "+
+		"authorization code: \n%v\n", authURL)
+
+	var authCode string
+	if _, err := fmt.Scan(&authCode); err != nil {
+		log.Fatalf("Unable to read authorization code: %v", err)
+	}
+
+	tok, err := config.Exchange(context.TODO(), authCode)
+	if err != nil {
+		log.Fatalf("Unable to retrieve token from web: %v", err)
+	}
+	return tok
+}
+
+// Retrieves a token from a local file.
+func tokenFromFile(file string) (*oauth2.Token, error) {
+	f, err := os.Open(file)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	tok := &oauth2.Token{}
+	err = json.NewDecoder(f).Decode(tok)
+	return tok, err
+}
+
+// Saves a token to a file path.
+func saveToken(path string, token *oauth2.Token) {
+	fmt.Printf("Saving credential file to: %s\n", path)
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	if err != nil {
+		log.Fatalf("Unable to cache oauth token: %v", err)
+	}
+	defer f.Close()
+	json.NewEncoder(f).Encode(token)
+}
+
+func getEx(srv *sheets.Service) (mem, act string) {
+	// Prints the names and majors of students in a sample spreadsheet:
+	resp, err := srv.Spreadsheets.Values.Get(spreadsheetId, readRange).Do()
+	if err != nil {
+		log.Fatalf("Unable to retrieve data from sheet: %v", err)
+	}
+
+	if len(resp.Values) == 0 {
+		fmt.Println("No data found.")
+	} else {
+		fmt.Println(resp.Values)
+		// fmt.Println(resp.Values[1][0])
+		// for _, row := range resp.Values {
+		// 	// Print columns A and E, which correspond to indices 0 and 4.
+		// 	fmt.Printf("%s, %s\n", row[0], row[4])
+		// }
+		return resp.Values[0][0].(string), resp.Values[1][0].(string)
+	}
+
+	return
+}
+
+func insertEx(srv *sheets.Service, mem, act string) {
+	var wR string
+	data1D := make([]string, 0)
+	if mem != "" {
+		data1D = append(data1D, mem)
+		wR = "行程表!A1"
+	}
+
+	if act != "" {
+		data1D = append(data1D, act)
+		wR = "行程表!A2"
+	}
+
+	s1D := make([]interface{}, len(data1D))
+	for i, v := range data1D {
+		s1D[i] = v
+	}
+
+	s2D := [][]interface{}{}
+	s2D = append(s2D, s1D)
+	vr := sheets.ValueRange{
+		MajorDimension: "COLUMNS",
+		Values:         s2D,
+	}
+
+	_, err := srv.Spreadsheets.Values.Update(spreadsheetId, wR, &vr).ValueInputOption("USER_ENTERED").Do()
+	if err != nil {
+		log.Println(err.Error())
+	}
+}
+
+func NewSrv() (srv *sheets.Service) {
+	ctx := context.Background()
+	b, err := ioutil.ReadFile("credentials.json")
+	if err != nil {
+		log.Fatalf("Unable to read client secret file: %v", err)
+	}
+
+	// If modifying these scopes, delete your previously saved token.json.
+	config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets")
+	if err != nil {
+		log.Fatalf("Unable to parse client secret file to config: %v", err)
+	}
+	client := getClient(config)
+
+	srv, err = sheets.NewService(ctx, option.WithHTTPClient(client))
+	if err != nil {
+		log.Fatalf("Unable to retrieve Sheets client: %v", err)
+	}
+
+	return srv
+}
+
+func logMemList() string {
+	s, err := json.Marshal(sMg)
+	if err != nil {
+		log.Printf("Error: %s", err)
+		sendMsg("json.Marshal err : " + err.Error())
+		return ""
+	}
+
+	return string(s)
+}
+
+func logActList() string {
+	s, err := json.Marshal(sA)
+	if err != nil {
+		log.Printf("Error: %s", err)
+		sendMsg("json.Marshal err : " + err.Error())
+		return ""
+	}
+
+	return string(s)
 }
 
 func main() {
@@ -178,13 +337,15 @@ func main() {
 
 	tgbot.Debug = true
 
-	quit := make(chan os.Signal)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
-		select {
-		case <-quit:
-			sendMsg("line bot重啟...")
-		}
+		quit := make(chan os.Signal, 1)
+		errs := make(chan error, 1)
+		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+		errs <- fmt.Errorf("%s", <-quit)
+		sendMsg("line bot重啟...")
+
+		c := <-errs
+		sendMsg("中斷訊號 : " + c.Error())
 	}()
 
 	//設定時區 timer定時喚醒heroku
@@ -192,6 +353,23 @@ func main() {
 	ticker := time.NewTicker(9 * 60 * time.Second)
 	defer ticker.Stop()
 	go runtime(ticker, client)
+	//讀取Excel
+	NewSrv()
+	mem, act := getEx(srv)
+	if mem != "" && act != "" {
+		m := []MemGroup{}
+		mErr := json.Unmarshal([]byte(mem), &m)
+		a := []Activity{}
+		aErr := json.Unmarshal([]byte(act), &a)
+
+		if mErr != nil || aErr != nil {
+			log.Println(mErr, aErr)
+			sendMsg("Unmarshal err : " + mErr.Error() + aErr.Error())
+			return
+		}
+		sMg = m
+		sA = a
+	}
 
 	bot, botErr = linebot.New(os.Getenv("CHANNEL_SECRET"), os.Getenv("CHANNEL_ACCESS_TOKEN"))
 	if botErr != nil {
@@ -282,6 +460,7 @@ func callbackHandler(c *gin.Context) {
 						reply(event, linebot.NewTextMessage(userName+" "+str[1]+" 活動 : "+str[4]+" 時段 : "+str[2]+" "+str[3]))
 					} else {
 						reply(event, linebot.NewTextMessage(userName+" "+str[1]+" 活動 : "+str[4]+" 時段 : "+str[2]+" "+str[3]), actList())
+						insertEx(srv, "", logActList())
 					}
 
 					return
@@ -306,6 +485,7 @@ func callbackHandler(c *gin.Context) {
 				wg := SetWeekGroup(userName, str[0], str[1], str[4])
 				sMg = append(sMg, wg)
 				reply(event, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1]), linebot.NewTextMessage(memList()))
+				insertEx(srv, logMemList(), "")
 			}
 		case linebot.EventTypeMessage:
 			switch message := event.Message.(type) {
@@ -319,21 +499,9 @@ func callbackHandler(c *gin.Context) {
 				}
 
 				if message.Text == "LoG" {
-					s, err := json.Marshal(sMg)
-					if err != nil {
-						log.Printf("Error: %s", err)
-						sendMsg("json.Marshal err : " + err.Error())
-						return
-					}
-
-					sa, err := json.Marshal(sA)
-					if err != nil {
-						log.Printf("Error: %s", err)
-						sendMsg("json.Marshal err : " + err.Error())
-						return
-					}
-
-					reply(event, linebot.NewTextMessage(string(s)), linebot.NewTextMessage(string(sa)))
+					sm := logMemList()
+					sa := logActList()
+					reply(event, linebot.NewTextMessage(sm), linebot.NewTextMessage(sa))
 				}
 
 				if message.Text == "clearAll" {
@@ -388,13 +556,17 @@ func callbackHandler(c *gin.Context) {
 
 							ac.Number = tt.Unix()
 							ac.Name = sa[2]
-							ac.Date = sa[0]
+							ac.Clock = sa[0]
 							ac.Times = sa[1]
 							sA = append(sA, ac)
 							msg += "新增活動成功"
-							schedule(sa[0]+" "+sa[1], event, linebot.NewTextMessage("溫馨提醒 : "+sa[2]+"活動一小時後開始"))
+							schedule(sa[0]+" "+sa[1], event) //, linebot.NewTextMessage("溫馨提醒 : "+sa[2]+"活動一小時後開始"))
+							reply(event, linebot.NewTextMessage(msg), actList())
+							insertEx(srv, "", logActList())
+
+							return
 						}
-						reply(event, linebot.NewTextMessage(msg), actList())
+						reply(event, linebot.NewTextMessage(msg))
 					}
 				}
 			}
