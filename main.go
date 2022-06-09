@@ -346,6 +346,7 @@ func main() {
 
 		c := <-errs
 		sendMsg("中斷訊號 : " + c.Error())
+		os.Exit(0)
 	}()
 
 	//設定時區 timer定時喚醒heroku
