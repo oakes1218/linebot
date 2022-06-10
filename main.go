@@ -411,6 +411,8 @@ func callbackHandler(c *gin.Context) {
 					sMg = sMg[:0]
 					sA = sA[:0]
 					reply(event, linebot.NewTextMessage("Success clearAll"))
+					updateActDB(logActList())
+					updateMemDB(logMemList())
 				}
 
 				if message.Text == "參加人員" {
