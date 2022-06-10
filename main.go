@@ -346,6 +346,7 @@ func main() {
 
 		c := <-errs
 		sendMsg("中斷訊號 : " + c.Error())
+		time.Sleep(3 * time.Second)
 		os.Exit(0)
 	}()
 
