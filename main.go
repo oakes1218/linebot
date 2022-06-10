@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -178,13 +179,17 @@ func main() {
 
 	tgbot.Debug = true
 
-	quit := make(chan os.Signal)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
-		select {
-		case <-quit:
-			sendMsg("line bot重啟...")
-		}
+		quit := make(chan os.Signal, 1)
+		errs := make(chan error, 1)
+		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+		errs <- fmt.Errorf("%s", <-quit)
+		sendMsg("line bot重啟...")
+
+		c := <-errs
+		sendMsg("中斷訊號 : " + c.Error())
+		time.Sleep(3 * time.Second)
+		os.Exit(0)
 	}()
 
 	//設定時區 timer定時喚醒heroku
