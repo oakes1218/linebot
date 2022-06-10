@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -18,13 +19,17 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
+
+	_ "github.com/lib/pq"
 )
 
 var (
 	bot     *linebot.Client
 	tgbot   *tgbotapi.BotAPI
+	db      *sql.DB
 	tbotErr error
 	botErr  error
+	dbErr   error
 	loc     *time.Location
 	client  = &http.Client{}
 )
@@ -54,6 +59,12 @@ type Activity struct {
 	Times  string
 }
 
+type LineBot struct {
+	MemList string
+	ActList string
+	kind    string
+}
+
 func SetWeekGroup(mem, dt, ck, id string) (mg MemGroup) {
 	mg.Member = mem
 	mg.Date = dt
@@ -71,7 +82,7 @@ func reply(event *linebot.Event, sentMsg ...linebot.SendingMessage) {
 	}
 }
 
-func schedule(dateTime string, event *linebot.Event, sentMsg ...linebot.SendingMessage) {
+func schedule(dateTime string) {
 	tt, err := time.ParseInLocation("2006-01-02 15:04:05", dateTime+":00", loc)
 	if err != nil {
 		log.Println(err.Error())
@@ -94,26 +105,6 @@ func schedule(dateTime string, event *linebot.Event, sentMsg ...linebot.SendingM
 			}
 		}
 		sendMsg("刪除逾時活動")
-		// LOOP:
-		// 	for {
-		// 		for k, v := range sA {
-		// 			if tt.Unix()-60*60 == time.Now().Unix() {
-		// 				reply(event, sentMsg...)
-		// 			}
-
-		// 			if tt.Unix() == v.Number {
-		// 				sA = append(sA[:k], sA[k+1:]...)
-		// 			}
-		// 		}
-
-		// 		for k, v := range sMg {
-		// 			if strconv.FormatInt(tt.Unix(), 10) == v.Number {
-		// 				sMg = append(sMg[:k], sMg[k+1:]...)
-		// 				sendMsg("刪除逾時活動")
-		// 				break LOOP
-		// 			}
-		// 		}
-		// 	}
 	}()
 }
 
@@ -148,7 +139,7 @@ func memList() string {
 
 func actList() *linebot.TemplateMessage {
 	var cc []*linebot.CarouselColumn
-	picture := "https://upload.cc/i1/2022/06/01/1ryUBP.jpeg"
+	picture := "https://upload.cc/i1/2022/06/10/9yF8Lh.jpg"
 	if len(sA) == 0 {
 		return nil
 	}
@@ -168,6 +159,77 @@ func actList() *linebot.TemplateMessage {
 	msg := linebot.NewTemplateMessage("Sorry :(, please update your app.", template)
 
 	return msg
+}
+
+func getDB() (m []MemGroup, a []Activity) {
+	var lb LineBot
+	rows, err := db.Query("SELECT * FROM linebot")
+	if err != nil {
+		sendMsg("db.Query error : " + err.Error())
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		if err := rows.Scan(&lb.MemList, &lb.ActList, &lb.kind); err != nil {
+			sendMsg("rows.Next error : " + err.Error())
+			return
+		}
+	}
+
+	mErr := json.Unmarshal([]byte(lb.MemList), &m)
+	aErr := json.Unmarshal([]byte(lb.ActList), &a)
+	if mErr != nil || aErr != nil {
+		sendMsg("Unmarshal error : " + mErr.Error() + aErr.Error())
+		return
+	}
+
+	sendMsg("人員列表 : " + lb.MemList)
+	sendMsg("活動列表 : " + lb.ActList)
+
+	return m, a
+}
+
+func updateMemDB(m string) {
+	kind := "line"
+	// m := `[{"Member":"Eddie","Date":"2022-06-15","Clock":"17:30","Number":"1654361276"},{"Member":"刁","Date":"2022-06-15","Clock":"17:30","Number":"1654361276"},{"Member":"陸澤宇","Date":"2022-06-15","Clock":"17:30","Number":"1654361276"},{"Member":"Steve","Date":"2022-06-15","Clock":"17:30","Number":"1654361276"},{"Member":"Eddie","Date":"2022-06-15","Clock":"17:30","Number":"1654614480"},{"Member":"刁","Date":"2022-06-15","Clock":"17:30","Number":"1654614480"},{"Member":"陸澤宇","Date":"2022-06-15","Clock":"17:30","Number":"1654614480"},{"Member":"Steve","Date":"2022-06-15","Clock":"17:30","Number":"1654614480"},{"Member":"Momo","Date":"2022-06-15","Clock":"17:30","Number":"1654614480"}]`
+	// a := `[{"Number":1654361276,"Name":"chill play","Date":"2022-06-15","Times":"17:30"},{"Number":1654614480,"Name":"jim 生日","Date":"2022-06-10","Times":"21:30:"}]`
+	_, err := db.Exec("UPDATE linebot SET MemList=$1 WHERE kind=$2", m, kind)
+	if err != nil {
+		sendMsg("updateMemDB error : " + err.Error())
+		return
+	}
+}
+
+func updateActDB(a string) {
+	kind := "line"
+	_, err := db.Exec("UPDATE linebot SET ActList=$1 WHERE kind=$2", a, kind)
+	if err != nil {
+		sendMsg("updateActDB error : " + err.Error())
+		return
+	}
+}
+
+func logMemList() string {
+	s, err := json.Marshal(sMg)
+	if err != nil {
+		log.Printf("Error: %s", err)
+		sendMsg("json.Marshal err : " + err.Error())
+		return ""
+	}
+
+	return string(s)
+}
+
+func logActList() string {
+	s, err := json.Marshal(sA)
+	if err != nil {
+		log.Printf("Error: %s", err)
+		sendMsg("json.Marshal err : " + err.Error())
+		return ""
+	}
+
+	return string(s)
 }
 
 func main() {
@@ -202,6 +264,18 @@ func main() {
 	if botErr != nil {
 		log.Println(botErr.Error())
 		return
+	}
+
+	connStr := "postgres://uodxfjwnqrdbvs:0c5467cad15fb737ccd40a93e16b22aae7f097404e43283daebd3873ea4f7bb8@ec2-3-226-163-72.compute-1.amazonaws.com:5432/demuva44cefibo"
+	db, dbErr = sql.Open("postgres", connStr)
+	if dbErr != nil {
+		log.Fatal(dbErr)
+	}
+
+	m, a := getDB()
+	if len(m) != 0 || len(a) != 0 {
+		sMg = m
+		sA = a
 	}
 
 	r := gin.Default()
@@ -282,6 +356,8 @@ func callbackHandler(c *gin.Context) {
 							sMg = append(sMg[:k], sMg[k+1:]...)
 						}
 					}
+					updateActDB(logActList())
+					updateMemDB(logMemList())
 
 					if actList() == nil {
 						reply(event, linebot.NewTextMessage(userName+" "+str[1]+" 活動 : "+str[4]+" 時段 : "+str[2]+" "+str[3]))
@@ -299,6 +375,7 @@ func callbackHandler(c *gin.Context) {
 						} else if str[2] == "取消" {
 							sMg = append(sMg[:k], sMg[k+1:]...)
 							reply(event, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1]), linebot.NewTextMessage(memList()))
+							updateMemDB(logMemList())
 							return
 						}
 					}
@@ -311,6 +388,7 @@ func callbackHandler(c *gin.Context) {
 				wg := SetWeekGroup(userName, str[0], str[1], str[4])
 				sMg = append(sMg, wg)
 				reply(event, linebot.NewTextMessage(userName+" "+str[2]+" 活動 : "+str[3]+" 時段 : "+str[0]+" "+str[1]), linebot.NewTextMessage(memList()))
+				updateMemDB(logMemList())
 			}
 		case linebot.EventTypeMessage:
 			switch message := event.Message.(type) {
@@ -324,21 +402,9 @@ func callbackHandler(c *gin.Context) {
 				}
 
 				if message.Text == "LoG" {
-					s, err := json.Marshal(sMg)
-					if err != nil {
-						log.Printf("Error: %s", err)
-						sendMsg("json.Marshal err : " + err.Error())
-						return
-					}
-
-					sa, err := json.Marshal(sA)
-					if err != nil {
-						log.Printf("Error: %s", err)
-						sendMsg("json.Marshal err : " + err.Error())
-						return
-					}
-
-					reply(event, linebot.NewTextMessage(string(s)), linebot.NewTextMessage(string(sa)))
+					mString := logMemList()
+					aString := logActList()
+					reply(event, linebot.NewTextMessage(mString), linebot.NewTextMessage(aString))
 				}
 
 				if message.Text == "clearAll" {
@@ -397,7 +463,8 @@ func callbackHandler(c *gin.Context) {
 							ac.Times = sa[1]
 							sA = append(sA, ac)
 							msg += "新增活動成功"
-							schedule(sa[0]+" "+sa[1], event, linebot.NewTextMessage("溫馨提醒 : "+sa[2]+"活動一小時後開始"))
+							schedule(sa[0] + " " + sa[1])
+							updateActDB(logActList())
 						}
 						reply(event, linebot.NewTextMessage(msg), actList())
 					}

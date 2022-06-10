@@ -13,6 +13,7 @@ require (
 	github.com/joho/godotenv v1.4.0 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/leodido/go-urn v1.2.0 // indirect
+	github.com/lib/pq v1.10.6 // indirect
 	github.com/line/line-bot-sdk-go v7.8.0+incompatible // indirect
 	github.com/line/line-bot-sdk-go/v7 v7.16.0 // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect
