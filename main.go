@@ -266,7 +266,7 @@ func main() {
 		return
 	}
 
-	connStr := "postgres://uodxfjwnqrdbvs:0c5467cad15fb737ccd40a93e16b22aae7f097404e43283daebd3873ea4f7bb8@ec2-3-226-163-72.compute-1.amazonaws.com:5432/demuva44cefibo"
+	connStr := "postgres://dc3ghn65mhd6gn:0c5467cad15fb737ccd40a93e16b22aae7f097404e43283daebd3873ea4f7bb8@ec2-3-226-163-72.compute-1.amazonaws.com:5432/demuva44cefibo"
 	db, dbErr = sql.Open("postgres", connStr)
 	if dbErr != nil {
 		log.Fatal(dbErr)
