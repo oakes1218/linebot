@@ -251,7 +251,7 @@ func logActList() string {
 func inline() {
 	t := time.NewTicker(time.Second * 10)
 	defer t.Stop()
-	uri, err := url.Parse("https://www.89ip.cn/")
+	uri, err := url.Parse("https://198.50.198.93/")
 	if err != nil {
 		log.Println(err)
 		return
@@ -290,7 +290,7 @@ loop:
 			break loop
 		}
 
-		if resp.Status != "200 OK" {
+		if resp.StatusCode != http.StatusOK {
 			sendMsg("抓取網頁錯誤")
 			sendMsg(resp.Status)
 			sendMsg(string(body))
