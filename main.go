@@ -256,7 +256,7 @@ func inline() {
 		return
 	}
 
-	client := http.Client{
+	client := &http.Client{
 		Transport: &http.Transport{
 			Proxy: http.ProxyURL(uri),
 		},
