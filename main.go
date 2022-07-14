@@ -253,6 +253,7 @@ func inline() {
 	uri, err := url.Parse("https://www.89ip.cn/")
 	if err != nil {
 		log.Println(err)
+		return
 	}
 
 	client := http.Client{
@@ -268,20 +269,20 @@ loop:
 		req, err := http.NewRequest("GET", url, nil)
 		req.Header.Set("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36")
 		if err != nil {
-			log.Println(err)
+			sendMsg("http.NewRequest error :" + err.Error())
 			break loop
 		}
 
 		resp, err := client.Do(req)
 		if err != nil {
-			log.Println(err)
+			sendMsg("client.Do error :" + err.Error())
 			break loop
 		}
 		defer resp.Body.Close()
 
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			log.Println(err)
+			sendMsg("ioutil.ReadAll error :" + err.Error())
 			break loop
 		}
 
@@ -305,20 +306,20 @@ loop:
 				req.Header.Set("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36")
 				req.Header.Set("Content-Type", "application/json")
 				if err != nil {
-					log.Println(err)
+					sendMsg("http.NewRequest error :" + err.Error())
 					break loop
 				}
 
 				resp, err := client.Do(req)
 				if err != nil {
-					log.Println(err)
+					sendMsg("client.Do error :" + err.Error())
 					break loop
 				}
 				defer resp.Body.Close()
 
 				body, err := ioutil.ReadAll(resp.Body)
 				if err != nil {
-					log.Println(err)
+					sendMsg("ioutil.ReadAll error :" + err.Error())
 					break loop
 				}
 
