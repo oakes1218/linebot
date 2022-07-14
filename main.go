@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/tls"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -258,7 +259,8 @@ func inline() {
 
 	client := &http.Client{
 		Transport: &http.Transport{
-			Proxy: http.ProxyURL(uri),
+			Proxy:           http.ProxyURL(uri),
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		},
 	}
 
