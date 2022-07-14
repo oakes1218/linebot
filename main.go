@@ -276,6 +276,8 @@ loop:
 
 		if resp.Status != "200 OK" {
 			sendMsg("抓取網頁錯誤")
+			sendMsg(resp.Status)
+			sendMsg(string(body))
 			break loop
 		}
 
