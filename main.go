@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"regexp"
@@ -249,6 +250,17 @@ func logActList() string {
 func inline() {
 	t := time.NewTicker(time.Second * 10)
 	defer t.Stop()
+	uri, err := url.Parse("https://www.89ip.cn/")
+	if err != nil {
+		log.Println(err)
+	}
+
+	client := http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyURL(uri),
+		},
+	}
+
 loop:
 	for {
 		<-t.C
