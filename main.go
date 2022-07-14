@@ -247,7 +247,6 @@ func logActList() string {
 }
 
 func inline() {
-	client := &http.Client{}
 	t := time.NewTicker(time.Second * 10)
 	defer t.Stop()
 loop:
