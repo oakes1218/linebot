@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -21,6 +22,7 @@ import (
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 
 	_ "github.com/lib/pq"
+	"github.com/tidwall/gjson"
 )
 
 var (
@@ -37,6 +39,18 @@ var (
 const (
 	chatID  = 193618166
 	tgToken = "1394548836:AAHdBSpf4QnA5Rt7xsLInEFDLMZ6i41Z0fY"
+)
+
+var (
+	date        = "2022-08-11"
+	times       = "19:30"
+	p     int64 = 4
+	// 台中新馬辣
+	company  = "-LjL6vW09dVGOC0tGamg"
+	branchID = "-Mw-S9FSZby-GN_0tiZe"
+	// 台中中山燒肉
+	// company  = -LzoSPyWXzTNSaE - I4QJ
+	// branchID = -MdytTkuohNf5wnBz1vZ
 )
 
 // 資料存放記憶體
@@ -232,6 +246,77 @@ func logActList() string {
 	return string(s)
 }
 
+func inline() {
+	client := &http.Client{}
+	t := time.NewTicker(time.Second * 10)
+	defer t.Stop()
+loop:
+	for {
+		<-t.C
+		url := "https://inline.app/api/booking-capacitiesV3?companyId=" + company + "%3Ainline-live-1&branchId=" + branchID
+		req, err := http.NewRequest("GET", url, nil)
+		req.Header.Set("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36")
+		if err != nil {
+			log.Println(err)
+			break loop
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Println(err)
+			break loop
+		}
+		defer resp.Body.Close()
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Println(err)
+			break loop
+		}
+
+		if resp.Status != "200 OK" {
+			sendMsg("抓取網頁錯誤")
+			break loop
+		}
+
+		val := gjson.Get(string(body), "default."+date+".times."+times).Array()
+		if len(val) != 0 {
+			sendMsg("空缺位置" + gjson.Get(string(body), "default."+date+".times."+times).String())
+		}
+
+		for _, v := range val {
+			if v.Int() == p {
+				url := "https://inline.app/api/reservations/booking"
+				jsonData := []byte(`{"language":"zh-tw","company":"` + company + `:inline-live-1","branch":"` + branchID + `","groupSize":"` + strconv.FormatInt(p, 10) + `","kids":0,"gender":0,"purposes":[],"email":"","name":"李亞諦","phone":"+886937550247","note":"","date":"` + date + `","time":"` + times + `","numberOfKidChairs":0,"numberOfKidSets":0,"skipPhoneValidation":false,"referer":"www.google.com"}`)
+				req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+				req.Header.Set("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36")
+				req.Header.Set("Content-Type", "application/json")
+				if err != nil {
+					log.Println(err)
+					break loop
+				}
+
+				resp, err := client.Do(req)
+				if err != nil {
+					log.Println(err)
+					break loop
+				}
+				defer resp.Body.Close()
+
+				body, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					log.Println(err)
+					break loop
+				}
+
+				sendMsg("訂位成功" + string(body))
+				break loop
+			}
+		}
+	}
+	sendMsg("訂位程序中斷")
+}
+
 func main() {
 	//server重啟發tg
 	tgbot, tbotErr = tgbotapi.NewBotAPI(tgToken)
@@ -259,6 +344,7 @@ func main() {
 	ticker := time.NewTicker(9 * 60 * time.Second)
 	defer ticker.Stop()
 	go runtime(ticker, client)
+	go inline()
 
 	bot, botErr = linebot.New(os.Getenv("CHANNEL_SECRET"), os.Getenv("CHANNEL_ACCESS_TOKEN"))
 	if botErr != nil {
