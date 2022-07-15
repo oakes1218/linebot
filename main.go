@@ -279,6 +279,8 @@ loop:
 			sendMsg("ioutil.ReadAll error :" + err.Error())
 			break loop
 		}
+		sendMsg(resp.Status)
+		sendMsg(string(body))
 
 		if resp.StatusCode != http.StatusOK {
 			sendMsg("抓取網頁錯誤")
@@ -291,7 +293,7 @@ loop:
 		if len(val) != 0 {
 			sendMsg("空缺位置" + gjson.Get(string(body), "default."+date+".times."+times).String())
 		}
-		sendMsg(string(body))
+
 		for _, v := range val {
 			if v.Int() == p {
 				url := "https://inline.app/api/reservations/booking"
