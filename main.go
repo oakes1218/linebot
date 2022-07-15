@@ -254,6 +254,7 @@ loop:
 	for {
 		<-t.C
 		url := "https://inline.app/api/booking-capacitiesV3?companyId=" + company + "%3Ainline-live-1&branchId=" + branchID
+		url = "https://google.com"
 		req, err := http.NewRequest("GET", url, nil)
 		req.Header.Set("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36")
 		req.Header.Set("Content-Type", "application/json")
@@ -290,7 +291,7 @@ loop:
 		if len(val) != 0 {
 			sendMsg("空缺位置" + gjson.Get(string(body), "default."+date+".times."+times).String())
 		}
-
+		sendMsg(string(body))
 		for _, v := range val {
 			if v.Int() == p {
 				url := "https://inline.app/api/reservations/booking"
