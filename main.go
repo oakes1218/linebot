@@ -254,7 +254,6 @@ loop:
 	for {
 		<-t.C
 		url := "https://inline.app/api/booking-capacitiesV3?companyId=" + company + "%3Ainline-live-1&branchId=" + branchID
-		url = "https://google.com"
 		req, err := http.NewRequest("GET", url, nil)
 		req.Header.Set("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36")
 		req.Header.Set("Content-Type", "application/json")
@@ -279,8 +278,6 @@ loop:
 			sendMsg("ioutil.ReadAll error :" + err.Error())
 			break loop
 		}
-		sendMsg(resp.Status)
-		sendMsg(string(body))
 
 		if resp.StatusCode != http.StatusOK {
 			sendMsg("抓取網頁錯誤")
