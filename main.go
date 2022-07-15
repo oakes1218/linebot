@@ -2,14 +2,12 @@ package main
 
 import (
 	"bytes"
-	"crypto/tls"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
 	"regexp"
@@ -251,19 +249,6 @@ func logActList() string {
 func inline() {
 	t := time.NewTicker(time.Second * 10)
 	defer t.Stop()
-	uri, err := url.Parse("https://198.50.198.93/")
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	client := &http.Client{
-		Transport: &http.Transport{
-			Proxy:           http.ProxyURL(uri),
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		},
-	}
-
 loop:
 	for {
 		<-t.C
@@ -271,6 +256,9 @@ loop:
 		req, err := http.NewRequest("GET", url, nil)
 		req.Header.Set("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36")
 		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate, private")
+		req.Header.Set("Pragma", "no-cache")
+		req.Header.Set("Access-Control-Allow-Origin", "*")
 		req.Header.Set("Accept", "*/*")
 		if err != nil {
 			sendMsg("http.NewRequest error :" + err.Error())
@@ -309,6 +297,9 @@ loop:
 				req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 				req.Header.Set("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36")
 				req.Header.Set("Content-Type", "application/json")
+				req.Header.Set("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate, private")
+				req.Header.Set("Pragma", "no-cache")
+				req.Header.Set("Access-Control-Allow-Origin", "*")
 				req.Header.Set("Accept", "*/*")
 				if err != nil {
 					sendMsg("http.NewRequest error :" + err.Error())
