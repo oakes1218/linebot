@@ -260,6 +260,7 @@ loop:
 		req.Header.Set("Access-Control-Allow-Origin", "*")
 		req.Header.Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		req.Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		req.Header.Set("Accept", "*/*")
 		if err != nil {
 			sendMsg("http.NewRequest error :" + err.Error())
 			break loop
@@ -300,6 +301,7 @@ loop:
 				req.Header.Set("Access-Control-Allow-Origin", "*")
 				req.Header.Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 				req.Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+				req.Header.Set("Accept", "*/*")
 				if err != nil {
 					sendMsg("http.NewRequest error :" + err.Error())
 					break loop
