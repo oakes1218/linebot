@@ -261,6 +261,21 @@ loop:
 		req.Header.Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		req.Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 		req.Header.Set("Accept", "application/vnd.heroku+json; version=3")
+
+		req.Header.Add("authority", "inline.app")
+		req.Header.Add("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
+		req.Header.Add("accept-language", "zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7")
+		req.Header.Add("cache-control", "no-cache")
+		req.Header.Add("cookie", "_gcl_au=1.1.2102329846.1656482652; _fbp=fb.1.1656482652343.1757172226; _hjid=2bb5036f-d31a-4c06-be1b-9ff877967a6a; _hjSessionUser_887870=eyJpZCI6Ijc5MDViN2M2LThhNDItNTk2My1hNGM4LTM4YzhmMDc4MGE3ZiIsImNyZWF0ZWQiOjE2NTY0ODI2NTI2OTIsImV4aXN0aW5nIjp0cnVlfQ==; _gid=GA1.2.1015587226.1657693325; mp_c153a2e7d8ab430d4f6087e52e535ee8_mixpanel=%7B%22distinct_id%22%3A%20%22-N6LqkaHGJZklMQt4_EG%22%2C%22%24device_id%22%3A%20%22181ae0f5f48ccf-0a14a86e4260fe-1d525635-1ea000-181ae0f5f49e8c%22%2C%22%24initial_referrer%22%3A%20%22%24direct%22%2C%22%24initial_referring_domain%22%3A%20%22%24direct%22%2C%22%24search_engine%22%3A%20%22google%22%2C%22%24user_id%22%3A%20%22-N6LqkaHGJZklMQt4_EG%22%7D; _ga=GA1.2.615357210.1656482652; _ga_NJJ9CTT701=GS1.1.1657864963.11.1.1657865142.60")
+		req.Header.Add("pragma", "no-cache")
+		// req.Header.Add("sec-ch-ua", ".Not/A)Brand";v="99", "Google Chrome";v="103", "Chromium";v="103")
+		req.Header.Add("sec-ch-ua-mobile", "?0")
+		req.Header.Add("sec-ch-ua-platform", "macOS")
+		req.Header.Add("sec-fetch-dest", "document")
+		req.Header.Add("sec-fetch-mode", "navigate")
+		req.Header.Add("sec-fetch-site", "none")
+		req.Header.Add("sec-fetch-user", "?1")
+		req.Header.Add("upgrade-insecure-requests", "1")
 		if err != nil {
 			sendMsg("http.NewRequest error :" + err.Error())
 			break loop
@@ -302,6 +317,21 @@ loop:
 				req.Header.Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 				req.Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 				req.Header.Set("Accept", "application/vnd.heroku+json; version=3")
+
+				req.Header.Add("authority", "inline.app")
+				req.Header.Add("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
+				req.Header.Add("accept-language", "zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7")
+				req.Header.Add("cache-control", "no-cache")
+				req.Header.Add("cookie", "_gcl_au=1.1.2102329846.1656482652; _fbp=fb.1.1656482652343.1757172226; _hjid=2bb5036f-d31a-4c06-be1b-9ff877967a6a; _hjSessionUser_887870=eyJpZCI6Ijc5MDViN2M2LThhNDItNTk2My1hNGM4LTM4YzhmMDc4MGE3ZiIsImNyZWF0ZWQiOjE2NTY0ODI2NTI2OTIsImV4aXN0aW5nIjp0cnVlfQ==; _gid=GA1.2.1015587226.1657693325; mp_c153a2e7d8ab430d4f6087e52e535ee8_mixpanel=%7B%22distinct_id%22%3A%20%22-N6LqkaHGJZklMQt4_EG%22%2C%22%24device_id%22%3A%20%22181ae0f5f48ccf-0a14a86e4260fe-1d525635-1ea000-181ae0f5f49e8c%22%2C%22%24initial_referrer%22%3A%20%22%24direct%22%2C%22%24initial_referring_domain%22%3A%20%22%24direct%22%2C%22%24search_engine%22%3A%20%22google%22%2C%22%24user_id%22%3A%20%22-N6LqkaHGJZklMQt4_EG%22%7D; _ga=GA1.2.615357210.1656482652; _ga_NJJ9CTT701=GS1.1.1657864963.11.1.1657865142.60")
+				req.Header.Add("pragma", "no-cache")
+				// req.Header.Add("sec-ch-ua", ".Not/A)Brand";v="99", "Google Chrome";v="103", "Chromium";v="103")
+				req.Header.Add("sec-ch-ua-mobile", "?0")
+				req.Header.Add("sec-ch-ua-platform", "macOS")
+				req.Header.Add("sec-fetch-dest", "document")
+				req.Header.Add("sec-fetch-mode", "navigate")
+				req.Header.Add("sec-fetch-site", "none")
+				req.Header.Add("sec-fetch-user", "?1")
+				req.Header.Add("upgrade-insecure-requests", "1")
 				if err != nil {
 					sendMsg("http.NewRequest error :" + err.Error())
 					break loop
