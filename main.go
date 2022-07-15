@@ -249,6 +249,7 @@ func logActList() string {
 func inline() {
 	t := time.NewTicker(time.Second * 10)
 	defer t.Stop()
+
 loop:
 	for {
 		<-t.C
@@ -256,10 +257,9 @@ loop:
 		req, err := http.NewRequest("GET", url, nil)
 		req.Header.Set("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36")
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate, private")
-		req.Header.Set("Pragma", "no-cache")
 		req.Header.Set("Access-Control-Allow-Origin", "*")
-		req.Header.Set("Accept", "*/*")
+		req.Header.Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		req.Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 		if err != nil {
 			sendMsg("http.NewRequest error :" + err.Error())
 			break loop
@@ -297,10 +297,9 @@ loop:
 				req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 				req.Header.Set("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36")
 				req.Header.Set("Content-Type", "application/json")
-				req.Header.Set("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate, private")
-				req.Header.Set("Pragma", "no-cache")
 				req.Header.Set("Access-Control-Allow-Origin", "*")
-				req.Header.Set("Accept", "*/*")
+				req.Header.Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+				req.Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 				if err != nil {
 					sendMsg("http.NewRequest error :" + err.Error())
 					break loop
