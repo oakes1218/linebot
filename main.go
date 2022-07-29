@@ -347,7 +347,7 @@ func main() {
 	ticker := time.NewTicker(9 * 60 * time.Second)
 	defer ticker.Stop()
 	go runtime(ticker, client)
-	go inline()
+	// go inline()
 
 	bot, botErr = linebot.New(os.Getenv("CHANNEL_SECRET"), os.Getenv("CHANNEL_ACCESS_TOKEN"))
 	if botErr != nil {
