@@ -37,8 +37,8 @@ var (
 )
 
 const (
-	chatID  = 193618166
-	tgToken = "1394548836:AAHdBSpf4QnA5Rt7xsLInEFDLMZ6i41Z0fY"
+	chatID  = 0
+	tgToken = ""
 )
 
 var (
